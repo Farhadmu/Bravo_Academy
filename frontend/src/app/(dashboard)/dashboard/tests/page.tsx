@@ -15,8 +15,8 @@ interface Test {
     price: number;
     is_free: boolean;
     is_free_sample: boolean;
-    // status and best_score will come from a different API or we'll mock them briefly for now 
-    // until we have full UserTestAccess integration in UI
+    is_bank?: boolean;
+    set_number?: number;
 }
 
 export default function TestsPage() {
@@ -80,7 +80,10 @@ export default function TestsPage() {
                                 </div>
                             </CardContent>
                             <CardFooter className="pt-2">
-                                <Link href={`/dashboard/tests/${test.id}`} className="w-full">
+                                <Link
+                                    href={`/dashboard/tests/${test.id}${test.set_number ? `?set_number=${test.set_number}` : ''}`}
+                                    className="w-full"
+                                >
                                     <Button className="w-full gap-2">
                                         Start Test <AlertTriangle className="w-4 h-4" />
                                     </Button>

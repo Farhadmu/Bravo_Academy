@@ -59,6 +59,9 @@ class Result(models.Model):
         help_text="Accuracy percentage (Correct / Answered)"
     )
     
+    # Virtual Set Tracking
+    set_number = models.IntegerField(default=1, help_text="The partition number of the bank")
+    
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     
@@ -104,7 +107,8 @@ class Result(models.Model):
             passed=session.passed or False,
             time_limit_seconds=session.time_limit_seconds,
             time_taken_seconds=session.time_spent_seconds,
-            accuracy=accuracy
+            accuracy=accuracy,
+            set_number=session.set_number
         )
         
         return result

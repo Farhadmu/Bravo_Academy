@@ -23,6 +23,7 @@ class Test(models.Model):
     
     # Test type
     is_free_sample = models.BooleanField(default=False, help_text="Is this a free sample test?")
+    is_bank = models.BooleanField(default=False, help_text="Is this a unified question bank?")
     is_active = models.BooleanField(default=True)
     
     # Metadata
@@ -97,6 +98,9 @@ class TestSession(models.Model):
     percentage = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     passed = models.BooleanField(null=True, blank=True)
     
+    # Virtual Set Tracking
+    set_number = models.IntegerField(default=1, help_text="The partition number of the bank")
+    
     # Device tracking
     device_fingerprint = models.CharField(max_length=255, blank=True)
     ip_address = models.GenericIPAddressField(blank=True, null=True)
@@ -138,10 +142,23 @@ class TestSession(models.Model):
         
         # Optimize: Fetch all relevant questions in one query
         question_ids = self.answers.keys()
-        questions_map = {str(q.id): q for q in Question.objects.filter(id__in=question_ids, test=self.test)}
+        
+        if self.test.is_bank:
+            start_range = (self.set_number - 1) * 100 + 1
+            end_range = self.set_number * 100
+            queryset = Question.objects.filter(
+                id__in=question_ids, 
+                test=self.test,
+                bank_order__gte=start_range,
+                bank_order__lte=end_range
+            )
+        else:
+            queryset = Question.objects.filter(id__in=question_ids, test=self.test)
+            
+        questions_map = {str(q.id): q for q in queryset}
         
         correct_count = 0
-        total_questions = self.test.total_questions
+        total_questions = 100 if self.test.is_bank else self.test.total_questions
         
         for question_id, answer_id in self.answers.items():
             question = questions_map.get(str(question_id))

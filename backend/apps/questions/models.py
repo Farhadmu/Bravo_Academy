@@ -50,7 +50,8 @@ class Question(models.Model):
         choices=DIFFICULTY_CHOICES,
         default='medium'
     )
-    order = models.IntegerField(default=0, help_text="Display order in test")
+    order = models.IntegerField(default=0, help_text="Display order within a test if not in a bank")
+    bank_order = models.IntegerField(default=0, help_text="Global index in the unified question bank")
     explanation = models.TextField(blank=True, help_text="Explanation for the correct answer")
     
     # Timestamps
@@ -62,9 +63,10 @@ class Question(models.Model):
         db_table = 'questions'
         verbose_name = 'Question'
         verbose_name_plural = 'Questions'
-        ordering = ['test', 'order', 'created_at']
+        ordering = ['bank_order', 'order', 'created_at']
         indexes = [
             models.Index(fields=['test', 'order']),
+            models.Index(fields=['bank_order']),
             models.Index(fields=['difficulty_level']),
         ]
     

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Clock, Loader2 } from "lucide-react";
@@ -20,12 +20,16 @@ interface TestDetail {
     description: string;
     duration_minutes: number;
     total_questions: number;
+    is_bank?: boolean;
 }
 
 export default function TestRunnerPage({ params }: { params: Promise<{ id: string }> }) {
     const unwrappedParams = React.use(params);
     const id = unwrappedParams.id;
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const setNumber = searchParams.get('set_number') || '1';
+
     const [test, setTest] = useState<TestDetail | null>(null);
     const [questions, setQuestions] = useState<Question[]>([]);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -47,14 +51,16 @@ export default function TestRunnerPage({ params }: { params: Promise<{ id: strin
     useEffect(() => {
         const fetchTestData = async () => {
             try {
-                const testRes = await api.get(`/tests/tests/${id}/`);
+                const testRes = await api.get(`/tests/tests/${id}/?set_number=${setNumber}`);
                 setTest(testRes.data);
 
-                const questionsRes = await api.get(`/questions/?test_id=${id}`);
+                const questionsRes = await api.get(`/questions/?test_id=${id}&set_number=${setNumber}`);
                 const questionsData = questionsRes.data.results || questionsRes.data;
                 setQuestions(Array.isArray(questionsData) ? questionsData : []);
 
-                const sessionRes = await api.post(`/tests/tests/${id}/start_session/`);
+                const sessionRes = await api.post(`/tests/tests/${id}/start_session/`, {
+                    set_number: setNumber
+                });
                 const session = sessionRes.data;
                 setSessionId(session.id);
 
