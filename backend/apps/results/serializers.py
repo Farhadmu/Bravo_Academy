@@ -24,7 +24,7 @@ class ResultDetailSerializer(ResultSerializer):
         session = obj.test_session
         user_answers = session.answers or {}
         
-        questions = Question.objects.filter(test=obj.test).order_by('order')
+        questions = Question.objects.filter(test=obj.test).order_by('bank_order', 'order', 'created_at')
         
         review = []
         for q in questions:

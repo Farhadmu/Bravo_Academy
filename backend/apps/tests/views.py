@@ -16,52 +16,24 @@ class TestViewSet(viewsets.ModelViewSet):
         
         if page is not None:
             serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(self._expand_virtual_sets(serializer.data))
+            return self.get_paginated_response(serializer.data)
 
         serializer = self.get_serializer(queryset, many=True)
-        return Response(self._expand_virtual_sets(serializer.data))
-
-    def _expand_virtual_sets(self, tests):
-        """Expand tests that are marked as banks into virtual sets."""
-        expanded_tests = []
-        for test_data in tests:
-            if test_data.get('is_bank'):
-                # Split into chunks of 100
-                total_qs = test_data.get('total_questions', 0)
-                num_sets = (total_qs + 99) // 100
-                for i in range(1, num_sets + 1):
-                    new_test = test_data.copy()
-                    new_test['name'] = f"IQ Test - Set {i}"
-                    new_test['set_number'] = i
-                    new_test['total_questions'] = 100
-                    # For now, only Set 1 is the free sample
-                    new_test['is_free_sample'] = (i == 1)
-                    expanded_tests.append(new_test)
-            else:
-                expanded_tests.append(test_data)
-        return expanded_tests
+        return Response(serializer.data)
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-        data = serializer.data
-        if instance.is_bank:
-            set_num = int(request.query_params.get('set_number', 1))
-            data['name'] = f"IQ Test - Set {set_num}"
-            data['set_number'] = set_num
-            data['total_questions'] = 100
-        return Response(data)
+        return Response(serializer.data)
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def start_session(self, request, pk=None):
         test = self.get_object()
-        set_num = int(request.data.get('set_number', 1))
         
-        # Check for active session for this specific set
+        # Check for active session for this specific test
         active_session = TestSession.objects.filter(
             user=request.user, 
             test=test, 
-            set_number=set_num,
             status='in_progress'
         ).first()
         
@@ -72,28 +44,19 @@ class TestViewSet(viewsets.ModelViewSet):
             user=request.user,
             test=test,
             time_limit_seconds=test.duration_minutes * 60,
-            status='in_progress',
-            set_number=set_num
+            status='in_progress'
         )
         return Response(TestSessionSerializer(session).data, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=['get'], permission_classes=[permissions.AllowAny])
     def get_sample_test(self, request):
-        """Get the first set of the Master Bank as the free sample."""
-        test = Test.objects.filter(is_bank=True, is_active=True).first()
-        if not test:
-            test = Test.objects.filter(is_free_sample=True, is_active=True).first()
+        """Get the premium test (Set 1) marked as free sample."""
+        test = Test.objects.filter(is_free_sample=True, is_active=True).first()
         
         if not test:
             return Response({"error": "No sample test found"}, status=status.HTTP_404_NOT_FOUND)
             
         data = TestSerializer(test).data
-        if test.is_bank:
-            data['name'] = "IQ Test - Set 1"
-            data['set_number'] = 1
-            data['total_questions'] = 100
-            data['is_free_sample'] = True
-            
         return Response(data)
 
     @action(detail=True, methods=['get'], permission_classes=[permissions.AllowAny])

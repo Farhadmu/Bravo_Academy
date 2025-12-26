@@ -142,23 +142,12 @@ class TestSession(models.Model):
         
         # Optimize: Fetch all relevant questions in one query
         question_ids = self.answers.keys()
-        
-        if self.test.is_bank:
-            start_range = (self.set_number - 1) * 100 + 1
-            end_range = self.set_number * 100
-            queryset = Question.objects.filter(
-                id__in=question_ids, 
-                test=self.test,
-                bank_order__gte=start_range,
-                bank_order__lte=end_range
-            )
-        else:
-            queryset = Question.objects.filter(id__in=question_ids, test=self.test)
+        queryset = Question.objects.filter(id__in=question_ids, test=self.test)
             
         questions_map = {str(q.id): q for q in queryset}
         
         correct_count = 0
-        total_questions = 100 if self.test.is_bank else self.test.total_questions
+        total_questions = self.test.total_questions
         
         for question_id, answer_id in self.answers.items():
             question = questions_map.get(str(question_id))

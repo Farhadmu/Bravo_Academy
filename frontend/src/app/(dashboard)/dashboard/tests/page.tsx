@@ -15,8 +15,6 @@ interface Test {
     price: number;
     is_free: boolean;
     is_free_sample: boolean;
-    is_bank?: boolean;
-    set_number?: number;
 }
 
 export default function TestsPage() {
@@ -81,7 +79,7 @@ export default function TestsPage() {
                             </CardContent>
                             <CardFooter className="pt-2">
                                 <Link
-                                    href={`/dashboard/tests/${test.id}${test.set_number ? `?set_number=${test.set_number}` : ''}`}
+                                    href={`/dashboard/tests/${test.id}`}
                                     className="w-full"
                                 >
                                     <Button className="w-full gap-2">

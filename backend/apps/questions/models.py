@@ -119,8 +119,10 @@ from django.dispatch import receiver
 
 @receiver(post_save, sender=Question)
 def update_test_question_count_on_save(sender, instance, **kwargs):
-    """Update the total_questions count on the parent Test."""
+    """Update the total_questions count on the parent Test (skip for banks)."""
     test = instance.test
+    if test.is_bank:
+        return
     actual_count = Question.objects.filter(test=test).count()
     if test.total_questions != actual_count:
         test.total_questions = actual_count
@@ -128,8 +130,10 @@ def update_test_question_count_on_save(sender, instance, **kwargs):
 
 @receiver(post_delete, sender=Question)
 def update_test_question_count_on_delete(sender, instance, **kwargs):
-    """Update the total_questions count on the parent Test."""
+    """Update the total_questions count on the parent Test (skip for banks)."""
     test = instance.test
+    if test.is_bank:
+        return
     actual_count = Question.objects.filter(test=test).count()
     if test.total_questions != actual_count:
         test.total_questions = actual_count

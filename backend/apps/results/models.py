@@ -84,6 +84,7 @@ class Result(models.Model):
     def create_from_session(cls, session):
         """Create a result from a completed test session."""
         total_questions = session.test.total_questions
+            
         correct_answers = session.score or 0
         wrong_answers = len(session.answers) - correct_answers
         unanswered = total_questions - len(session.answers)
