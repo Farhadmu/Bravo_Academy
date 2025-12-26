@@ -11,9 +11,7 @@ class TestViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        if self.action == 'list':
-             return Test.objects.filter(is_active=True)
-        return super().get_queryset()
+        return Test.objects.filter(is_active=True)
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def start_session(self, request, pk=None):
