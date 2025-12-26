@@ -14,6 +14,7 @@ interface Test {
     total_questions: number;
     price: number;
     is_free: boolean;
+    is_free_sample: boolean;
     // status and best_score will come from a different API or we'll mock them briefly for now 
     // until we have full UserTestAccess integration in UI
 }
@@ -59,8 +60,8 @@ export default function TestsPage() {
                             <CardHeader className="pb-4">
                                 <div className="flex justify-between items-start">
                                     <span className={`px-2 py-1 rounded text-xs font-bold uppercase tracking-wide
-                        ${test.is_free ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
-                                        {test.is_free ? 'Free' : 'Premium'}
+                        ${test.is_free_sample ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                                        {test.is_free_sample ? 'Free' : 'Premium'}
                                     </span>
                                     {test.price > 0 && (
                                         <span className="text-sm font-semibold text-gray-900">৳{test.price}</span>

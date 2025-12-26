@@ -4,7 +4,7 @@ from .models import Test, TestSession
 class TestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Test
-        fields = ['id', 'name', 'description', 'duration_minutes', 'total_questions', 'is_free', 'price', 'created_at']
+        fields = ['id', 'name', 'description', 'duration_minutes', 'total_questions', 'is_free', 'is_free_sample', 'price', 'created_at']
 
 class TestSessionSerializer(serializers.ModelSerializer):
     class Meta:
