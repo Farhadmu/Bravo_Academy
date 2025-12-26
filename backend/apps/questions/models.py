@@ -111,3 +111,26 @@ class QuestionImage(models.Model):
     
     def __str__(self):
         return f"Image for {self.question}"
+
+
+# Signals to keep test total_questions in sync
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
+
+@receiver(post_save, sender=Question)
+def update_test_question_count_on_save(sender, instance, **kwargs):
+    """Update the total_questions count on the parent Test."""
+    test = instance.test
+    actual_count = Question.objects.filter(test=test).count()
+    if test.total_questions != actual_count:
+        test.total_questions = actual_count
+        test.save(update_fields=['total_questions'])
+
+@receiver(post_delete, sender=Question)
+def update_test_question_count_on_delete(sender, instance, **kwargs):
+    """Update the total_questions count on the parent Test."""
+    test = instance.test
+    actual_count = Question.objects.filter(test=test).count()
+    if test.total_questions != actual_count:
+        test.total_questions = actual_count
+        test.save(update_fields=['total_questions'])
