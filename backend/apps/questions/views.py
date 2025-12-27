@@ -13,7 +13,13 @@ class QuestionViewSet(viewsets.ModelViewSet):
         return QuestionSerializer
 
     def get_queryset(self):
-        queryset = Question.objects.all()
+        # Optimize query with select_related to prevent N+1 queries
+        # Use only() to fetch minimal fields for better performance
+        queryset = Question.objects.select_related('test').only(
+            'id', 'test_id', 'question_text', 'question_type', 
+            'options', 'difficulty_level', 'order', 'bank_order'
+        )
+        
         test_id = self.request.query_params.get('test_id', None)
         
         if test_id is not None:

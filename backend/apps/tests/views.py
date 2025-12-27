@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from django.utils import timezone
 from .models import Test, TestSession
 from .serializers import TestSerializer, TestSessionSerializer
+from apps.questions.serializers import TestQuestionSerializer
+from apps.questions.models import Question
 
 class TestViewSet(viewsets.ModelViewSet):
     queryset = Test.objects.all()
@@ -26,6 +28,37 @@ class TestViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def start_test(self, request, pk=None):
+        """Optimized endpoint: Returns test details, session, and all questions in one call"""
+        test = self.get_object()
+        
+        # Check for active session
+        active_session = TestSession.objects.filter(
+            user=request.user, 
+            test=test, 
+            status='in_progress'
+        ).first()
+        
+        if not active_session:
+            active_session = TestSession.objects.create(
+                user=request.user,
+                test=test,
+                time_limit_seconds=test.duration_minutes * 60,
+                status='in_progress'
+            )
+        
+        # Fetch questions with optimized query
+        questions = Question.objects.filter(test=test).only(
+            'id', 'question_text', 'question_type', 'options', 'order'
+        ).order_by('order')
+        
+        return Response({
+            'test': TestSerializer(test).data,
+            'session': TestSessionSerializer(active_session).data,
+            'questions': TestQuestionSerializer(questions, many=True).data
+        })
+    
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def start_session(self, request, pk=None):
         test = self.get_object()

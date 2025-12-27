@@ -45,19 +45,16 @@ export default function TestRunnerPage({ params }: { params: Promise<{ id: strin
         answersRef.current = answers;
     }, [answers]);
 
-    // Fetch Test Data
+    // Fetch Test Data - OPTIMIZED: Single API call instead of 3
     useEffect(() => {
         const fetchTestData = async () => {
             try {
-                const testRes = await api.get(`/tests/tests/${id}/`);
-                setTest(testRes.data);
+                // Single optimized API call that returns test, session, and questions together
+                const response = await api.post(`/tests/tests/${id}/start_test/`);
+                const { test: testData, session, questions: questionsData } = response.data;
 
-                const questionsRes = await api.get(`/questions/?test_id=${id}`);
-                const questionsData = questionsRes.data.results || questionsRes.data;
+                setTest(testData);
                 setQuestions(Array.isArray(questionsData) ? questionsData : []);
-
-                const sessionRes = await api.post(`/tests/tests/${id}/start_session/`);
-                const session = sessionRes.data;
                 setSessionId(session.id);
 
                 if (session.answers) {
@@ -65,7 +62,7 @@ export default function TestRunnerPage({ params }: { params: Promise<{ id: strin
                 }
 
                 const sessionStartTime = session.started_at || session.created_at;
-                const sessionLimit = session.time_limit_seconds || (testRes.data.duration_minutes * 60) || 1800;
+                const sessionLimit = session.time_limit_seconds || (testData.duration_minutes * 60) || 1800;
                 const startTime = new Date(sessionStartTime).getTime();
                 const elapsed = isNaN(startTime) ? 0 : Math.max(0, Math.floor((Date.now() - startTime) / 1000));
                 const remaining = sessionLimit - elapsed;
