@@ -20,7 +20,7 @@ def parse_and_create_set9():
         name="IQ Test - Set 9",
         defaults={
             "description": "Ninth set of IQ evaluation questions",
-            "duration_minutes": 20,
+            "duration_minutes": 30,
             "price": 0.00,
             "is_active": True
             # 'is_free_sample' defaults to False
