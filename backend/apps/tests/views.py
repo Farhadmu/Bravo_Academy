@@ -8,9 +8,12 @@ from apps.questions.serializers import TestQuestionSerializer
 from apps.questions.models import Question
 
 class TestViewSet(viewsets.ModelViewSet):
-    queryset = Test.objects.all()
     serializer_class = TestSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        """Return tests ordered by creation date ascending (Set 1, Set 2...)."""
+        return Test.objects.all().order_by('created_at')
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
