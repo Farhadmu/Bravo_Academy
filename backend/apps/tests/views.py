@@ -53,14 +53,12 @@ class TestViewSet(viewsets.ModelViewSet):
             )
         
         # Fetch questions with optimized query
-        questions = Question.objects.filter(test=test).only(
-            'id', 'question_text', 'question_type', 'options', 'order'
-        ).order_by('order')
+        questions = Question.objects.filter(test=test).prefetch_related('images').order_by('order')
         
         return Response({
             'test': TestSerializer(test).data,
             'session': TestSessionSerializer(active_session).data,
-            'questions': TestQuestionSerializer(questions, many=True).data
+            'questions': TestQuestionSerializer(questions, many=True, context={'request': request}).data
         })
     
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
@@ -116,7 +114,7 @@ class TestViewSet(viewsets.ModelViewSet):
         else:
             questions = Question.objects.filter(test=test).order_by('order')
             
-        return Response(PublicQuestionSerializer(questions, many=True).data)
+        return Response(PublicQuestionSerializer(questions, many=True, context={'request': request}).data)
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.AllowAny])
     def public_evaluate(self, request, pk=None):

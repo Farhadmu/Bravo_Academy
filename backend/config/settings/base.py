@@ -25,6 +25,10 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 # Disable automatic slash appending to prevent POST->GET redirects
 APPEND_SLASH = False
 
+# Proxy settings for Render/Vercel
+USE_X_FORWARDED_HOST = config('USE_X_FORWARDED_HOST', default=False, cast=bool)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
 
 # Application definition

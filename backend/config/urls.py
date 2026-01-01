@@ -46,11 +46,11 @@ urlpatterns = [
     path('api/results/', include('apps.results.urls')),
 ]
 
-# Serve media files in development
+# Serve media files (Always serve in this specific setup for image visibility)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-    
     # Debug toolbar
     if 'debug_toolbar' in settings.INSTALLED_APPS:
         urlpatterns = [path('__debug__/', include('debug_toolbar.urls'))] + urlpatterns

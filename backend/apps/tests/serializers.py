@@ -17,6 +17,11 @@ class PublicQuestionSerializer(serializers.Serializer):
     question_text = serializers.CharField()
     options = serializers.JSONField()
     order = serializers.IntegerField()
+    images = serializers.SerializerMethodField()
+
+    def get_images(self, obj):
+        from apps.questions.serializers import QuestionImageSerializer
+        return QuestionImageSerializer(obj.images.all(), many=True, context=self.context).data
 
 class PublicEvaluationSerializer(serializers.Serializer):
     score = serializers.IntegerField()
