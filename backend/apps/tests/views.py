@@ -8,6 +8,7 @@ from apps.questions.serializers import TestQuestionSerializer
 from apps.questions.models import Question
 
 class TestViewSet(viewsets.ModelViewSet):
+    queryset = Test.objects.all()
     serializer_class = TestSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
