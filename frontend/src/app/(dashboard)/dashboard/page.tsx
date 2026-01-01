@@ -48,12 +48,14 @@ export default function DashboardPage() {
             }, 5000);
 
             try {
-                // Fetch analytics - now returns single object, not array
-                const analyticsRes = await api.get('/results/analytics/');
+                // Fetch analytics and recent results in parallel
+                const [analyticsRes, activitiesRes] = await Promise.all([
+                    api.get('/results/analytics/'),
+                    api.get('/results/results/')
+                ]);
+
                 setAnalytics(analyticsRes.data);
 
-                // Fetch recent results
-                const activitiesRes = await api.get('/results/results/');
                 const activitiesData = activitiesRes.data.results || activitiesRes.data;
                 setActivities(Array.isArray(activitiesData) ? activitiesData : []);
 
