@@ -8,9 +8,11 @@ class QuestionImageSerializer(serializers.ModelSerializer):
 
 class TestQuestionSerializer(serializers.ModelSerializer):
     """Minimal serializer for test-taking - excludes test field to reduce payload size"""
+    images = QuestionImageSerializer(many=True, read_only=True)
+    
     class Meta:
         model = Question
-        fields = ['id', 'question_text', 'question_type', 'options', 'order']
+        fields = ['id', 'question_text', 'question_type', 'options', 'order', 'images']
 
 class QuestionSerializer(serializers.ModelSerializer):
     images = QuestionImageSerializer(many=True, read_only=True)

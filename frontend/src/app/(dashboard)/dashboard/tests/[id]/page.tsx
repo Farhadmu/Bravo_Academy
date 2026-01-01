@@ -12,6 +12,7 @@ interface Question {
     question_text: string;
     options: { id: string; text: string }[];
     question_type: 'mcq' | 'true_false';
+    images?: { id: string; image: string; caption: string }[];
 }
 
 interface TestDetail {
@@ -185,6 +186,16 @@ export default function TestRunnerPage({ params }: { params: Promise<{ id: strin
             {/* Question Card */}
             <Card className="min-h-[400px] flex flex-col justify-between">
                 <CardContent className="pt-6">
+                    {currentQuestion.images && currentQuestion.images.length > 0 && (
+                        <div className="mb-6 flex justify-center">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={currentQuestion.images[0].image}
+                                alt={currentQuestion.images[0].caption || "Question Image"}
+                                className="max-w-full max-h-[400px] object-contain rounded-lg border"
+                            />
+                        </div>
+                    )}
                     <h3 className="text-xl font-medium text-gray-900 mb-8 leading-relaxed">
                         {currentQuestionIndex + 1}. {currentQuestion.question_text}
                     </h3>
