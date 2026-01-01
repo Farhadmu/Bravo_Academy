@@ -14,7 +14,7 @@ class ResultViewSet(viewsets.ReadOnlyModelViewSet):
         return ResultSerializer
 
     def get_queryset(self):
-        return Result.objects.filter(user=self.request.user)
+        return Result.objects.filter(user=self.request.user).select_related('test')
 
     def get_object(self):
         queryset = self.filter_queryset(self.get_queryset())
