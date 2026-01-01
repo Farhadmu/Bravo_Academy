@@ -35,11 +35,11 @@ AWS_S3_CUSTOM_DOMAIN = config('AWS_S3_CUSTOM_DOMAIN', default=None)
 
 if all([AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_STORAGE_BUCKET_NAME, AWS_S3_ENDPOINT_URL]):
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-    AWS_DEFAULT_ACL = 'public-read'
+    AWS_S3_SIGNATURE_VERSION = 's3v4'
+    AWS_S3_ADDRESSING_STYLE = 'path'
+    AWS_QUERYSTRING_AUTH = True  # Set to False if the bucket is public
     AWS_S3_FILE_OVERWRITE = False
-    
-    # Static files should still be served by WhiteNoise (recommended for Render)
-    # But if you want to put them on S3, you'd change STATICFILES_STORAGE here.
+    AWS_DEFAULT_ACL = None # Supabase handles ACLs via bucket settings
 else:
     # Fallback to local storage if S3 not configured
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
