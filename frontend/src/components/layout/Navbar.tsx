@@ -40,7 +40,7 @@ export default function Navbar() {
                     <div className="flex items-center">
                         <Link href="/" className="flex items-center gap-2">
                             <Shield className="h-8 w-8 text-blue-600" />
-                            <span className="font-bold text-xl text-gray-900">Defense Coach</span>
+                            <span className="font-bold text-xl text-gray-900">Bravo Academy</span>
                         </Link>
                     </div>
 

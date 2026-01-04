@@ -7,8 +7,8 @@ import Footer from '@/components/layout/Footer';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-    title: 'Defense Coaching Center & IQ Test Platform',
-    description: 'Prepare for defense services recruitment with premium IQ tests and coaching',
+    title: 'Bravo Academy & IQ Test Platform',
+    description: 'Prepare for your future with premium IQ tests and coaching from Bravo Academy.',
 };
 
 import { Providers } from './Providers';

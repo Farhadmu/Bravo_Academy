@@ -59,59 +59,31 @@ export default function ContactPage() {
                     <div className="space-y-8">
                         <Card className="shadow-md border-none">
                             <CardContent className="pt-6 flex items-start gap-4">
-                                <div className="p-3 bg-blue-100 rounded-lg">
-                                    <MapPin className="w-6 h-6 text-blue-600" />
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-gray-900 mb-1">Our Location</h3>
-                                    <p className="text-gray-600">
-                                        House #123, Road #45<br />
-                                        Defense Officer&apos;s Housing Society (DOHS)<br />
-                                        Dhaka, Bangladesh
-                                    </p>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="shadow-md border-none">
-                            <CardContent className="pt-6 flex items-start gap-4">
                                 <div className="p-3 bg-green-100 rounded-lg">
                                     <Phone className="w-6 h-6 text-green-600" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-gray-900 mb-1">Phone Number</h3>
-                                    <p className="text-gray-600">01XXX-XXXXXX (Office)</p>
-                                    <p className="text-gray-600">01XXX-XXXXXX (Admission)</p>
+                                    <h3 className="font-bold text-gray-900 mb-1">Contact Details</h3>
+                                    <p className="text-gray-600">Phone: 01979486096</p>
+                                    <p className="text-gray-600">WhatsApp: 01979486096</p>
+                                    <div className="mt-4">
+                                        <Button asChild className="bg-green-600 hover:bg-green-700 text-white cursor-pointer w-full">
+                                            <a href="https://wa.me/8801979486096" target="_blank" rel="noopener noreferrer">
+                                                Message on WhatsApp
+                                            </a>
+                                        </Button>
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
 
-                        <Card className="shadow-md border-none">
-                            <CardContent className="pt-6 flex items-start gap-4">
-                                <div className="p-3 bg-purple-100 rounded-lg">
-                                    <Mail className="w-6 h-6 text-purple-600" />
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-gray-900 mb-1">Email Address</h3>
-                                    <p className="text-gray-600">info@defensecoach.com</p>
-                                    <p className="text-gray-600">support@defensecoach.com</p>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Map Placeholder */}
-                        <div className="h-64 bg-gray-200 rounded-xl overflow-hidden shadow-md">
-                            <iframe
-                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d233668.0639672576!2d90.25446566416174!3d23.780753031631525!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755b8b087026b81%3A0x8fa563bbdd5904c2!2sDhaka!5e0!3m2!1sen!2sbd!4v1710000000000!5m2!1sen!2sbd"
-                                width="100%"
-                                height="100%"
-                                style={{ marginBottom: 0 }}
-                                allowFullScreen={true}
-                                loading="lazy"
-                                referrerPolicy="no-referrer-when-downgrade"
-                                className="border-0"
-                            ></iframe>
+                        <div className="bg-blue-50 p-6 rounded-xl border border-blue-100">
+                            <h3 className="font-bold text-blue-900 mb-2">Office Hours</h3>
+                            <p className="text-blue-800 text-sm">
+                                We are available on WhatsApp and Phone from 9:00 AM to 9:00 PM every day.
+                            </p>
                         </div>
+
                     </div>
                 </div>
             </div>

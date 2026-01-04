@@ -1,4 +1,4 @@
-# 🎯 Defense Academy & ISSB IQ Test Platform
+# 🎯 Bravo Academy & IQ Test Platform
 
 A high-performance, secure, and professional-grade IQ Test Platform designed for the **Bangladesh Bravo Academy**. This project was specifically engineered to help candidates of the **Bangladesh Armed Forces (Army, Navy, Air Force)** prepare for the **ISSB (Inter Services Selection Board)** exams through rigorous, timed IQ evaluations.
 

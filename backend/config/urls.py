@@ -21,7 +21,7 @@ def health_check(request):
     """
     return Response({
         'status': 'healthy',
-        'message': 'Defense Coaching Center & IQ Test Platform API is running',
+        'message': 'Bravo Academy & IQ Test Platform API is running',
         'version': '1.0.0'
     }, status=status.HTTP_200_OK)
 
@@ -56,6 +56,6 @@ if settings.DEBUG:
         urlpatterns = [path('__debug__/', include('debug_toolbar.urls'))] + urlpatterns
 
 # Customize admin site
-admin.site.site_header = "Defense Coaching Center & IQ Test Platform Admin"
-admin.site.site_title = "IQ Test Platform Admin"
+admin.site.site_header = "Bravo Academy Admin"
+admin.site.site_title = "Bravo Academy Admin"
 admin.site.index_title = "Welcome to the Administration Panel"

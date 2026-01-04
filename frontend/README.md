@@ -1,4 +1,4 @@
-# Frontend - Defense Coaching Center
+# Bravo Academy Frontend
 > **⚠️ PRIVATE CLIENT PROJECT**
 > Internal documentation for development and deployment.
 

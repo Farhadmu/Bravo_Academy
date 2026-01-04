@@ -12,10 +12,10 @@ export default function Footer() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div>
-                        <h3 className="text-lg font-semibold mb-4">Defense Coaching Center</h3>
+                        <h3 className="text-lg font-semibold mb-4">Bravo Academy</h3>
                         <p className="text-gray-400 text-sm">
-                            Premium preparation platform for defense services examinations.
-                            Master your IQ tests with our comprehensive practice materials.
+                            Premium preparation platform for IQ tests and comprehensive coaching.
+                            Master your skills with our expert-led practice materials.
                         </p>
                     </div>
                     <div>
@@ -31,14 +31,13 @@ export default function Footer() {
                     <div>
                         <h3 className="text-lg font-semibold mb-4">Contact Info</h3>
                         <ul className="space-y-2 text-sm text-gray-400">
-                            <li>Dhaka, Bangladesh</li>
-                            <li>Email: contact@defensecoach.com</li>
-                            <li>Phone: +880 1XXX-XXXXXX</li>
+                            <li>Phone: 01979486096</li>
+                            <li>WhatsApp: 01979486096</li>
                         </ul>
                     </div>
                 </div>
                 <div className="mt-8 pt-8 border-t border-gray-800 text-center text-sm text-gray-400">
-                    <p>&copy; {new Date().getFullYear()} Defense Coaching Center. All rights reserved.</p>
+                    <p>&copy; {new Date().getFullYear()} Bravo Academy. All rights reserved.</p>
                 </div>
             </div>
         </footer>
