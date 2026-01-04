@@ -3,14 +3,19 @@ from .models import Result, PerformanceAnalytics
 
 class ResultSerializer(serializers.ModelSerializer):
     test_name = serializers.ReadOnlyField(source='test.name')
-    
+    question_type = serializers.SerializerMethodField()
+
     class Meta:
         model = Result
         fields = [
-            'id', 'test', 'test_name', 'test_session', 
+            'id', 'test', 'test_name', 'question_type', 'test_session', 
             'total_questions', 'correct_answers', 'wrong_answers', 'unanswered',
             'score_percentage', 'passed', 'time_taken_seconds', 'accuracy', 'created_at'
         ]
+
+    def get_question_type(self, obj):
+        first_q = obj.test.questions.first()
+        return first_q.question_type if first_q else 'mcq'
 
 class ResultDetailSerializer(ResultSerializer):
     review_data = serializers.SerializerMethodField()

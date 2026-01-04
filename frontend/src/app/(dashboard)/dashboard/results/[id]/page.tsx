@@ -20,6 +20,7 @@ interface ReviewItem {
 interface ResultDetail {
     id: string;
     test_name: string;
+    question_type?: 'wat' | 'mcq' | 'true_false';
     score_percentage: string;
     passed: boolean;
     total_questions: number;
@@ -67,6 +68,50 @@ export default function ResultDetailPage({ params }: { params: Promise<{ id: str
 
     const accuracy = parseFloat(result.accuracy || '0');
 
+
+    // WAT View
+    if (result.question_type === 'wat') {
+        const words = result.review_data?.map(item => item.question_text) || [];
+
+        return (
+            <div className="space-y-8 pb-20">
+                <div className="flex items-center gap-4">
+                    <Link href="/dashboard/results">
+                        <Button variant="ghost"><ArrowLeft className="w-4 h-4 mr-2" /> Back to Results</Button>
+                    </Link>
+                </div>
+
+                <div className="bg-white rounded-xl shadow-sm p-8 text-center border">
+                    <div className="inline-flex items-center justify-center p-4 rounded-full mb-4 bg-blue-100 text-blue-600">
+                        <CheckCircle className="w-12 h-12" />
+                    </div>
+                    <h1 className="text-2xl font-bold text-gray-900 mb-2">WAT Completed</h1>
+                    <p className="text-gray-600">You have completed {result.test_name}</p>
+                    <div className="flex justify-center gap-6 mt-4 text-sm text-gray-500">
+                        <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(result.created_at).toLocaleDateString()}</span>
+                        <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {formatTime(result.time_taken_seconds)}</span>
+                    </div>
+                </div>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Word List</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {words.map((word, idx) => (
+                                <div key={idx} className="p-3 bg-gray-50 rounded border text-center font-medium text-gray-700">
+                                    {idx + 1}. {word}
+                                </div>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
+
+    // Standard Result View
     return (
         <div className="space-y-8 pb-20">
             <div className="flex items-center gap-4">

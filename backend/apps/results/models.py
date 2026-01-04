@@ -171,6 +171,11 @@ class PerformanceAnalytics(models.Model):
         """Update analytics based on a new result."""
         from decimal import Decimal
         
+        # Check if this is a WAT test (don't count towards analytics)
+        first_question = result.test.questions.first()
+        if first_question and first_question.question_type == 'wat':
+            return
+
         self.total_tests_taken += 1
         if result.passed:
             self.total_tests_passed += 1
