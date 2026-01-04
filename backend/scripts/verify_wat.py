@@ -17,18 +17,18 @@ from apps.tests.models import Test
 from apps.questions.models import Question
 
 def verify_wat():
-    print("Verifying WAT Set 3...")
+    print("Verifying WAT Set 4...")
     try:
-        test = Test.objects.get(name="WAT Set 3")
+        test = Test.objects.get(name="WAT Set 4")
         print(f"Test Found: {test.name}")
         print(f"Active: {test.is_active}")
         
         real_count = Question.objects.filter(test=test).count()
         
-        if real_count == 78:
-            print("SUCCESS: 78 questions confirmed.")
+        if real_count == 80:
+            print("SUCCESS: 80 questions confirmed.")
         else:
-            print(f"FAILURE: Expected 78 questions, found {real_count}")
+            print(f"FAILURE: Expected 80 questions, found {real_count}")
 
         # Check first question type
         first_q = test.questions.first()

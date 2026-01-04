@@ -20,7 +20,7 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 def seed_wat_set3():
-    print("Seeding WAT Set 3...")
+    print("Seeding WAT Set 3 (Corrected)...")
     
     # 1. Create or Get the Test
     admin_user = User.objects.filter(is_superuser=True).first()
@@ -30,27 +30,28 @@ def seed_wat_set3():
 
     test_name = "WAT Set 3"
     
-    # Words provided by user
+    # Corrected words provided by user
     words = [
         "BOOZE", "SUSPECT", "WORTHLESS", "APPRECIATE", "EPISODE", "INSENSITIVE", "KITE", "LIABILITY", "POLE", "ADVENTURE",
         "ARMY", "ADVERSITY", "COOPERATION", "CONGRATULATION", "DISCOURAGE", "EXAMINATION", "DICTATOR", "ILLITERATE", "LIVELY", "OPPOSITION",
         "COMPANY", "MUTATION", "EXPECTED", "TREMBLING", "INFLUENCE", "PUNISHMENT", "STRANGER", "CHARACTER", "MISUNDERSTANDING", "BLUNDER",
         "PEACE", "CHARM", "AGGREGATE", "COMPOSE", "STICK", "SWEEP", "CONFLICT", "BLOW", "SHINE", "MONEY",
-        "FAITH", "REVENGE", "IMPOSSIBLE", "GOSSIP", "BLUEPRINT", "CONFUSE", "DISCIPLINE", "FREEDOM", "DEMOCRACY", "CONFIDENCE",
-        "EVENING", "GROOM", "EFFICIENCY", "DESIGNATION", "BITTER", "SUPREME", "CULPRIT", "CONQUER", "ADVANTAGE", "OBJECTION",
-        "INSURANCE", "LEOPARD", "PATRIOTISM", "PHILOSOPHY", "CARELESSNESS", "AGGRESSIVE", "HERITAGE", "PUNCTUALITY", "ASSIST", "INITIATION",
-        "ADVERTISEMENT", "WITHDRAW", "ANGRY", "FALLOW", "INSPECTION", "GRADUATE", "TIDY", "CONSCIENCE"
+        "FAITH", "WORTHLESS", "REVENGE", "IMPOSSIBLE", "GOSSIP", "BLUEPRINT", "CONFUSE", "DISCIPLINE", "FREEDOM", "DEMOCRACY",
+        "CONFIDENCE", "EVENING", "GROOM", "EFFICIENCY", "DESIGNATION", "BITTER", "SUPREME", "CULPRIT", "CONQUER", "ADVANTAGE",
+        "OBJECTION", "INSURANCE", "LEOPARD", "PATRIOTISM", "PHILOSOPHY", "CARELESSNESS", "AGGRESSIVE", "HERITAGE", "PUNCTUALITY", "ASSIST",
+        "BLUNDER", "INITIATION", "ADVERTISEMENT", "WITHDRAW", "ANGRY", "FALLOW", "INSPECTION", "GRADUATE", "TIDY", "CONSCIENCE"
     ]
     
-    # Count: 78 words
-    # Duration: 78 * 10s = 780s = 13 mins. Set 14 for buffer.
+    # Calculate duration
+    count = len(words)
+    duration = max(14, int(count * 10 / 60) + 1)
     
     test, created = Test.objects.get_or_create(
         name=test_name,
         defaults={
-            'description': f"Word Association Test Set 3. You will see {len(words)} words, one by one, for 10 seconds each.",
-            'duration_minutes': 14, 
-            'total_questions': len(words),
+            'description': f"Word Association Test Set 3. You will see {count} words, one by one, for 10 seconds each.",
+            'duration_minutes': duration, 
+            'total_questions': count,
             'price': 0,
             'passing_score': 0, 
             'is_active': True,
@@ -58,13 +59,18 @@ def seed_wat_set3():
         }
     )
     
-    if created:
-        print(f"Created test: {test.name}")
-    else:
-        print(f"Using existing test: {test.name}")
-        # Clear existing questions to re-seed if needed
+    if not created:
+        print(f"Updating existing test: {test.name}")
+        # Update metadata if needed
+        test.description = f"Word Association Test Set 3. You will see {count} words, one by one, for 10 seconds each."
+        test.total_questions = count
+        test.save()
+        
+        # Clear existing questions to re-seed
         test.questions.all().delete()
         print("Cleared existing questions.")
+    else:
+        print(f"Created test: {test.name}")
 
     # 3. Create Questions
     questions_to_create = []
@@ -84,7 +90,7 @@ def seed_wat_set3():
     Question.objects.bulk_create(questions_to_create)
     print(f"Created {len(questions_to_create)} WAT questions.")
     
-    # Update total questions count
+    # Update total questions count (double checking)
     test.total_questions = len(questions_to_create)
     test.save()
     print("Test updated successfully!")
