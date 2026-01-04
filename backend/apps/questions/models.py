@@ -14,6 +14,7 @@ class Question(models.Model):
     QUESTION_TYPE_CHOICES = [
         ('mcq', 'Multiple Choice'),
         ('true_false', 'True/False'),
+        ('wat', 'Word Association Test'),
     ]
     
     DIFFICULTY_CHOICES = [

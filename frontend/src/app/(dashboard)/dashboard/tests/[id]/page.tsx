@@ -11,7 +11,7 @@ interface Question {
     id: string;
     question_text: string;
     options: { id: string; text: string }[];
-    question_type: 'mcq' | 'true_false';
+    question_type: 'mcq' | 'true_false' | 'wat';
     images?: { id: string; image: string; caption: string }[];
 }
 
@@ -34,6 +34,7 @@ export default function TestRunnerPage({ params }: { params: Promise<{ id: strin
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState<Record<string, string>>({}); // valid option id
     const [timeLeft, setTimeLeft] = useState(0);
+    const [watTimeLeft, setWatTimeLeft] = useState(10); // 10 seconds for WAT
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [sessionId, setSessionId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
@@ -106,13 +107,51 @@ export default function TestRunnerPage({ params }: { params: Promise<{ id: strin
     const submissionInProgress = useRef(false);
 
     useEffect(() => {
-        if (!loading && timeLeft > 0 && !isSubmitted) {
+        if (!loading && timeLeft > 0 && !isSubmitted && questions.length > 0) {
+            // Global timer
             const timer = setInterval(() => {
                 setTimeLeft((prev) => Math.max(0, prev - 1));
             }, 1000);
+
+            // WAT specific timer
+            let watTimer: NodeJS.Timeout | null = null;
+            if (questions[currentQuestionIndex]?.question_type === 'wat') {
+                // Reset WAT timer when question changes
+                // This is handled by a separate effect watching currentQuestionIndex
+            }
+
             return () => clearInterval(timer);
         }
-    }, [timeLeft, loading, isSubmitted]);
+    }, [timeLeft, loading, isSubmitted, currentQuestionIndex, questions]);
+
+    // Separate effect for WAT timer and auto-advance
+    useEffect(() => {
+        if (!loading && !isSubmitted && questions[currentQuestionIndex]?.question_type === 'wat') {
+            setWatTimeLeft(10); // Reset to 10s on question change
+
+            const timer = setInterval(() => {
+                setWatTimeLeft((prev) => {
+                    if (prev <= 1) {
+                        // Auto advance
+                        if (currentQuestionIndex < questions.length - 1) {
+                            setCurrentQuestionIndex((curr) => curr + 1);
+                            return 10;
+                        } else {
+                            // Last question, submit
+                            clearInterval(timer);
+                            if (!submissionInProgress.current) {
+                                handleSubmit(true);
+                            }
+                            return 0;
+                        }
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+
+            return () => clearInterval(timer);
+        }
+    }, [currentQuestionIndex, loading, isSubmitted, questions.length]); // Removed 'questions' dependency to avoid deep update loops, length is usually enough
 
     useEffect(() => {
         if (!loading && timeLeft === 0 && !isSubmitted && !submissionInProgress.current) {
@@ -201,23 +240,39 @@ export default function TestRunnerPage({ params }: { params: Promise<{ id: strin
                     </h3>
 
                     <div className="space-y-4">
-                        {currentQuestion.options.map((option, idx) => (
-                            <label
-                                key={idx}
-                                className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors hover:bg-gray-50 
-                   ${answers[currentQuestion.id] === option.id ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' : 'border-gray-200'}`}
-                            >
-                                <input
-                                    type="radio"
-                                    name={`question-${currentQuestion.id}`}
-                                    value={option.id}
-                                    checked={answers[currentQuestion.id] === option.id}
-                                    onChange={() => handleOptionSelect(option.id)}
-                                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 mr-3"
-                                />
-                                <span className="text-gray-700">{option.text}</span>
-                            </label>
-                        ))}
+                        {currentQuestion.question_type === 'wat' ? (
+                            <div className="flex flex-col items-center justify-center py-20">
+                                <h1 className="text-6xl font-black text-gray-900 mb-8 tracking-wider">{currentQuestion.question_text}</h1>
+                                <div className="w-full max-w-md bg-gray-200 rounded-full h-4 mb-4">
+                                    <div
+                                        className="bg-blue-600 h-4 rounded-full transition-all duration-1000 ease-linear"
+                                        style={{ width: `${(watTimeLeft / 10) * 100}%` }}
+                                    ></div>
+                                </div>
+                                <div className="text-2xl font-bold text-blue-600 animate-pulse">
+                                    {watTimeLeft}s
+                                </div>
+                                <p className="mt-8 text-gray-500 italic">Write a sentence with this word on your paper.</p>
+                            </div>
+                        ) : (
+                            currentQuestion.options.map((option, idx) => (
+                                <label
+                                    key={idx}
+                                    className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors hover:bg-gray-50 
+                    ${answers[currentQuestion.id] === option.id ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' : 'border-gray-200'}`}
+                                >
+                                    <input
+                                        type="radio"
+                                        name={`question-${currentQuestion.id}`}
+                                        value={option.id}
+                                        checked={answers[currentQuestion.id] === option.id}
+                                        onChange={() => handleOptionSelect(option.id)}
+                                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 mr-3"
+                                    />
+                                    <span className="text-gray-700">{option.text}</span>
+                                </label>
+                            ))
+                        )}
                     </div>
                 </CardContent>
 
@@ -240,8 +295,8 @@ export default function TestRunnerPage({ params }: { params: Promise<{ id: strin
                             Submit Test
                         </Button>
                     ) : (
-                        <Button onClick={handleNext}>
-                            Next Question
+                        <Button onClick={handleNext} disabled={currentQuestion.question_type === 'wat'}>
+                            {currentQuestion.question_type === 'wat' ? `Auto-advancing in ${watTimeLeft}s` : 'Next Question'}
                         </Button>
                     )}
                 </CardFooter>
