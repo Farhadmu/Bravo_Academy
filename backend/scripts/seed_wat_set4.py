@@ -20,7 +20,7 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 def seed_wat_set4():
-    print("Seeding WAT Set 4...")
+    print("Seeding WAT Set 4 (Corrected List)...")
     
     # 1. Create or Get the Test
     admin_user = User.objects.filter(is_superuser=True).first()
@@ -30,28 +30,18 @@ def seed_wat_set4():
 
     test_name = "WAT Set 4"
     
-    # Words provided by user
+    # Corrected words provided by user
+    # Note: Cleaned up "(Corrected from...)" notes
     words = [
-        "Booze", "Suspect", "Worthless", "Appreciate", "Episode", "Insensitive", "Kite", "Liability", 
-        "Pole", "Adventure", "Army", "Adversity", "Cooperation", "Congratulation", "Discourage", 
-        "Examination", "Dictator", "Illiterate", "Lively", "Opposition", "Company", "Mutation", 
-        "Expected", "Trembling", "Influence", "Punishment", "Stranger", "Character", "Misunderstanding", 
-        "Blunder", "Peace", "Charm", "Aggregate", "Compose", "Stick", "Sweep", "Conflict", "Blow", 
-        "Shine", "Money", "Faith", "Revenge", "Impossible", "Gossip", "Blueprint", "Confuse", 
-        "Discipline", "Freedom", "Democracy", "Confidence", "Evening", "Groom", "Efficiency", 
-        "Designation", "Bitter", "Supreme", "Culprit", "Conquer", "Advantage", "Objection", 
-        "Insurance", "Leopard", "Patriotism", "Philosophy", "Carelessness", "Aggressive", "Heritage", 
-        "Punctuality", "Assist", "Initiation", "Advertisement", "Withdraw", "Angry", "Fallow", 
-        "Inspection", "Graduate", "Tidy", "Convince", "Character", "Influence"
+        "DISCUSSION", "SYSTEM", "QUICK", "DREADFUL", "CAUSE", "GAY", "SPECIFIC", "METHOD", "HUNGER", "GREED",
+        "ILL", "KINDNESS", "CRITICISM", "GREATNESS", "COMPROMISE", "WORD", "PERSUADE", "CONFUSION", "AFFECTION", "REQUEST",
+        "DEPRESSION", "DEFEAT", "FATHER", "KNOWLEDGE", "ENTERTAINMENT", "LAUGHTER", "EDUCATION", "COURAGE", "QUANTITY", "MISER",
+        "INSANE", "CHANGE", "PRECAUTION", "POLITENESS", "BABY", "CLERK", "EXCUSE", "FAULT", "VIRGIN", "MURDERER",
+        "RESPONSE", "DESIGNATION", "MOBILE", "LEADERSHIP", "OVERCONFIDENCE", "VULGAR", "HIJACKING", "NATIVE", "PROFESSION", "ACTION",
+        "PROSPER", "CHANGE", "VICTORY", "DISOBEY", "COURAGE", "SETTLEMENT", "DISTINCTION", "FRAUGHT", "WORK", "AMBITION",
+        "COMPLAINT", "ENJOYMENT", "OBEDIENCE", "DIAGNOSE", "KILL", "AFFECTION", "ESPRIT", "WOOLLEN", "VICTIM", "RADIANCE",
+        "ETIQUETTE", "WHISKY", "THESAURUS", "AGILE", "DUMB", "RESPECT", "BORDER", "SENIOR", "DOMINANT", "SWORD"
     ]
-    
-    # Convert to UPPERCASE to match previous sets style? User provided Title Case.
-    # Previous sets were all caps. I should probably convert to UPPER for consistency 
-    # OR keep as user provided. 
-    # The user provided list for Set 3 was UPPERCASE. Set 2 was UPPERCASE.
-    # Set 4 input is Title Case. 
-    # I will convert to UPPERCASE for consistency with other sets.
-    words = [w.upper() for w in words]
     
     # Count: 80 words
     count = len(words)
@@ -71,13 +61,18 @@ def seed_wat_set4():
         }
     )
     
-    if created:
-        print(f"Created test: {test.name}")
-    else:
-        print(f"Using existing test: {test.name}")
+    if not created:
+        print(f"Updating existing test: {test.name}")
+        # Update metadata if needed
+        test.description = f"Word Association Test Set 4. You will see {count} words, one by one, for 10 seconds each."
+        test.total_questions = count
+        test.save()
+        
         # Clear existing questions to re-seed if needed
         test.questions.all().delete()
         print("Cleared existing questions.")
+    else:
+        print(f"Created test: {test.name}")
 
     # 3. Create Questions
     questions_to_create = []
