@@ -243,12 +243,7 @@ export default function TestRunnerPage({ params }: { params: Promise<{ id: strin
                         {currentQuestion.question_type === 'wat' ? (
                             <div className="flex flex-col items-center justify-center py-20">
                                 <h1 className="text-6xl font-black text-gray-900 mb-8 tracking-wider">{currentQuestion.question_text}</h1>
-                                <div className="w-full max-w-md bg-gray-200 rounded-full h-4 mb-4">
-                                    <div
-                                        className="bg-blue-600 h-4 rounded-full transition-all duration-1000 ease-linear"
-                                        style={{ width: `${(watTimeLeft / 10) * 100}%` }}
-                                    ></div>
-                                </div>
+                                { /* Progress bar removed */}
                                 <div className="text-2xl font-bold text-blue-600 animate-pulse">
                                     {watTimeLeft}s
                                 </div>
