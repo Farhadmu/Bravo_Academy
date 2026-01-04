@@ -64,7 +64,7 @@ export default function DashboardLayout({
             <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b z-30 flex items-center justify-between px-4">
                 <Link href="/" className="flex items-center gap-2">
                     <Shield className="h-6 w-6 text-blue-600" />
-                    <span className="font-bold text-lg text-gray-900">Defense Coach</span>
+                    <span className="font-bold text-lg text-gray-900">Bravo Academy</span>
                 </Link>
                 <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
                     {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -128,7 +128,7 @@ export default function DashboardLayout({
                 <div className="h-16 flex items-center px-6 border-b">
                     <Link href="/" className="flex items-center gap-2">
                         <Shield className="h-8 w-8 text-blue-600" />
-                        <span className="font-bold text-lg text-gray-900">Defense Coach</span>
+                        <span className="font-bold text-lg text-gray-900">Bravo Academy</span>
                     </Link>
                 </div>
 
