@@ -17,9 +17,9 @@ from apps.tests.models import Test
 from apps.questions.models import Question
 
 def verify_wat():
-    print("Verifying WAT Set 4...")
+    print("Verifying WAT Set 5...")
     try:
-        test = Test.objects.get(name="WAT Set 4")
+        test = Test.objects.get(name="WAT Set 5")
         print(f"Test Found: {test.name}")
         print(f"Active: {test.is_active}")
         
