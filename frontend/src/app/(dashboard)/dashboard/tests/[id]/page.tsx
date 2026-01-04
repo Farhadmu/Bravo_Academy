@@ -63,12 +63,19 @@ export default function TestRunnerPage({ params }: { params: Promise<{ id: strin
                     setAnswers(session.answers);
                 }
 
-                const sessionStartTime = session.started_at || session.created_at;
-                const sessionLimit = session.time_limit_seconds || (testData.duration_minutes * 60) || 1800;
-                const startTime = new Date(sessionStartTime).getTime();
-                const elapsed = isNaN(startTime) ? 0 : Math.max(0, Math.floor((Date.now() - startTime) / 1000));
-                const remaining = sessionLimit - elapsed;
-                setTimeLeft(Math.max(0, remaining));
+
+                // Use robust server-side calculation if available to avoid timezone issues
+                if (typeof session.remaining_seconds === 'number') {
+                    setTimeLeft(session.remaining_seconds);
+                } else {
+                    // Fallback to client-side calculation
+                    const sessionStartTime = session.started_at || session.created_at;
+                    const sessionLimit = session.time_limit_seconds || (testData.duration_minutes * 60) || 1800;
+                    const startTime = new Date(sessionStartTime).getTime();
+                    const elapsed = isNaN(startTime) ? 0 : Math.max(0, Math.floor((Date.now() - startTime) / 1000));
+                    const remaining = sessionLimit - elapsed;
+                    setTimeLeft(Math.max(0, remaining));
+                }
 
                 setLoading(false);
             } catch (err: any) {
