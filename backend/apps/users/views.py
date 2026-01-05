@@ -52,15 +52,24 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                         'detail': f'No account found with the username "{username}". Please check for typos.'
                     }, status=status.HTTP_401_UNAUTHORIZED)
             raise e
-        
         if response.status_code == 200:
-            # Login successful, now check device fingerprint
+            # Login successful, now check device fingerprint and maintenance mode
             username = request.data.get('username', '')
             device_fingerprint = request.data.get('device_fingerprint', '')
             
             try:
                 user = User.objects.get(username=username)
                 
+                # Check for Maintenance Mode
+                from apps.system.models import MaintenanceMode
+                maintenance = MaintenanceMode.get_current()
+                if maintenance.is_role_blocked(user.role):
+                    return Response({
+                        'error': 'Maintenance Mode',
+                        'message': maintenance.message,
+                        'detail': 'The system is currently under maintenance for your role.'
+                    }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
                 # Check if user can login from this device
                 if not user.can_login_from_device(device_fingerprint):
                     return Response({
@@ -129,10 +138,12 @@ class UserViewSet(viewsets.ModelViewSet):
         return UserSerializer
     
     def get_queryset(self):
-        """Filter queryset based on user role."""
+        """Filter queryset based on user role. Hide developers from admins."""
         user = self.request.user
-        if user.is_admin:
+        if user.is_developer:
             return User.objects.all()
+        if user.is_admin:
+            return User.objects.exclude(role='developer')
         return User.objects.filter(id=user.id)
     
     @action(detail=False, methods=['get', 'patch'], permission_classes=[IsAuthenticated])

@@ -15,6 +15,12 @@ class UserAdmin(BaseUserAdmin):
     search_fields = ('username', 'email', 'full_name')
     ordering = ('-created_at',)
     
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser or (hasattr(request.user, 'role') and request.user.role == 'developer'):
+            return qs
+        return qs.exclude(role='developer')
+    
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
         ('Personal Info', {'fields': ('full_name', 'email', 'phone')}),
