@@ -9,7 +9,8 @@ sys.path.insert(0, str(BASE_DIR))
 
 # Set up Django environment
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.production')
-os.environ.setdefault('DATABASE_URL', 'postgresql://postgres.jjxusciiuvcjltkreozq:IAmTheMan!20040113!@aws-1-ap-south-1.pooler.supabase.com:6543/postgres')
+# Database URL should be set via environment variable
+# Example: export DATABASE_URL='postgresql://user:password@host:port/database'
 django.setup()
 
 from apps.tests.models import Test

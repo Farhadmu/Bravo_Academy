@@ -47,10 +47,20 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # Next.js
-# Environment Variables
+# Environment variables
 .env
 .env.local
 .env.*.local
+.env.production
+.env.development
+*.env
+
+# Sensitive data and credentials
+**/credentials.json
+**/secrets.json
+**/*_credentials*
+**/*secret*
+**/database_url*
 *.env
 !*.env.example
 !.env.example
