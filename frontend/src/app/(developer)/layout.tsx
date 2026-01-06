@@ -42,14 +42,21 @@ export default function DeveloperLayout({
     }, [mounted, isAuthenticated, user, router]);
 
     if (!mounted || !isAuthenticated || user?.role !== 'developer') {
-        return null;
+        return (
+            <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mx-auto mb-4"></div>
+                    <p className="text-white text-sm">Loading Developer Portal...</p>
+                </div>
+            </div>
+        );
     }
 
     const devLinks = [
-        { href: '/developer', label: 'Dev Dashboard', icon: Terminal },
+        { href: '/developer', label: 'System Overview', icon: Terminal },
         { href: '/developer/maintenance', label: 'Maintenance Control', icon: Lock },
-        { href: '/developer/database', label: 'DB Inspector', icon: Database },
-        { href: '/developer/feature-flags', label: 'Feature Flags', icon: Settings },
+        { href: '/developer/database', label: 'Database Inspector', icon: Database },
+        { href: '/developer/feature-flags', label: 'Feature Flags Monitor', icon: Settings },
         { href: '/developer/stats', label: 'System Stats', icon: Activity },
     ];
 

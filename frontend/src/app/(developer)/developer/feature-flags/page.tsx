@@ -32,8 +32,6 @@ export default function FeatureFlags() {
     const [flags, setFlags] = useState<FeatureFlag[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [isCreating, setIsCreating] = useState(false);
-    const [newFlag, setNewFlag] = useState({ name: '', description: '' });
 
     const fetchFlags = async () => {
         setIsLoading(true);
@@ -47,39 +45,7 @@ export default function FeatureFlags() {
         }
     };
 
-    const toggleFlag = async (id: string) => {
-        try {
-            const res = await api.post(`/system/feature-flags/${id}/toggle/`);
-            setFlags(flags.map(f => f.id === id ? res.data : f));
-            toast.success(`Feature "${res.data.name}" ${res.data.is_enabled ? 'Enabled' : 'Disabled'}`);
-        } catch (error) {
-            toast.error('Failed to toggle feature flag');
-        }
-    };
-
-    const deleteFlag = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this feature flag?')) return;
-        try {
-            await api.delete(`/system/feature-flags/${id}/`);
-            setFlags(flags.filter(f => f.id !== id));
-            toast.success('Feature flag deleted');
-        } catch (error) {
-            toast.error('Failed to delete feature flag');
-        }
-    };
-
-    const createFlag = async () => {
-        if (!newFlag.name) return;
-        try {
-            const res = await api.post('/system/feature-flags/', newFlag);
-            setFlags([...flags, res.data]);
-            setNewFlag({ name: '', description: '' });
-            setIsCreating(false);
-            toast.success('Feature flag created');
-        } catch (error) {
-            toast.error('Failed to create feature flag');
-        }
-    };
+    // Mutation operations removed - this is now a read-only monitor
 
     useEffect(() => {
         fetchFlags();
@@ -96,18 +62,9 @@ export default function FeatureFlags() {
                 <div>
                     <h1 className="text-3xl font-bold text-white flex items-center gap-2">
                         <Flag className="h-8 w-8 text-indigo-400" />
-                        Feature Management
+                        Feature Flags Monitor
                     </h1>
-                    <p className="text-slate-400 mt-1">Deploy changes without code by toggling features live.</p>
-                </div>
-                <div className="flex gap-2">
-                    <Button onClick={() => setIsCreating(true)} className="bg-indigo-600 hover:bg-indigo-700">
-                        <Plus className="h-4 w-4 mr-2" />
-                        New Flag
-                    </Button>
-                    <Button variant="outline" onClick={fetchFlags} className="bg-slate-900 border-slate-700">
-                        <RefreshCw className="h-4 w-4" />
-                    </Button>
+                    <p className="text-slate-400 mt-1">View current feature flag states (read-only).</p>
                 </div>
             </div>
 
@@ -122,41 +79,7 @@ export default function FeatureFlags() {
                 />
             </div>
 
-            {/* Create Modal Mock */}
-            {isCreating && (
-                <Card className="bg-slate-900 border-indigo-500/50 text-white animate-in zoom-in-95 duration-200">
-                    <CardHeader>
-                        <CardTitle>Create New Feature Flag</CardTitle>
-                        <CardDescription>Give your feature a unique identifier and description.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label className="text-xs uppercase tracking-widest text-slate-500">Flag ID (Slug)</Label>
-                                <Input
-                                    value={newFlag.name}
-                                    onChange={(e) => setNewFlag({ ...newFlag, name: e.target.value })}
-                                    placeholder="e.g., enable_results_v2"
-                                    className="bg-slate-950 border-slate-800"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-xs uppercase tracking-widest text-slate-500">Description</Label>
-                                <Input
-                                    value={newFlag.description}
-                                    onChange={(e) => setNewFlag({ ...newFlag, description: e.target.value })}
-                                    placeholder="What does this feature do?"
-                                    className="bg-slate-950 border-slate-800"
-                                />
-                            </div>
-                        </div>
-                        <div className="flex justify-end gap-2">
-                            <Button variant="ghost" onClick={() => setIsCreating(false)}>Cancel</Button>
-                            <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={createFlag}>Create Flag</Button>
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
+
 
             {/* Flags Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -167,7 +90,7 @@ export default function FeatureFlags() {
                 ) : filteredFlags.length > 0 ? (
                     filteredFlags.map((flag) => (
                         <Card key={flag.id} className={`bg-slate-900 border-slate-800 hover:border-indigo-500/30 transition-all ${flag.is_enabled ? 'ring-1 ring-indigo-500/20 shadow-lg shadow-indigo-900/10' : 'opacity-60'}`}>
-                            <CardHeader className="flex flex-row items-start justify-between pb-2">
+                            <CardHeader className="pb-2">
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2">
                                         <CardTitle className="text-white font-mono text-sm uppercase tracking-wider">{flag.name}</CardTitle>
@@ -179,28 +102,11 @@ export default function FeatureFlags() {
                                     </div>
                                     <CardDescription className="text-slate-400 text-xs line-clamp-2 h-8">{flag.description || 'No description provided.'}</CardDescription>
                                 </div>
-                                <Switch
-                                    checked={flag.is_enabled}
-                                    onCheckedChange={() => toggleFlag(flag.id)}
-                                    className="data-[state=checked]:bg-indigo-600"
-                                />
                             </CardHeader>
                             <CardContent className="pt-4 border-t border-slate-800">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex gap-2">
-                                        <div className="flex items-center gap-1 text-[10px] text-slate-500">
-                                            <Users className="h-3 w-3" />
-                                            {flag.enabled_for_roles.length > 0 ? flag.enabled_for_roles.join(', ') : 'All Roles'}
-                                        </div>
-                                    </div>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 text-slate-500 hover:text-red-400 hover:bg-red-950/20"
-                                        onClick={() => deleteFlag(flag.id)}
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
+                                <div className="flex items-center gap-1 text-[10px] text-slate-500">
+                                    <Users className="h-3 w-3" />
+                                    {flag.enabled_for_roles.length > 0 ? flag.enabled_for_roles.join(', ') : 'All Roles'}
                                 </div>
                             </CardContent>
                         </Card>
@@ -209,20 +115,16 @@ export default function FeatureFlags() {
                     <div className="col-span-full py-20 text-center text-slate-600">
                         <Flag className="h-16 w-16 mx-auto mb-4 opacity-20" />
                         <p className="text-lg">No feature flags found.</p>
-                        <Button variant="link" className="text-indigo-400" onClick={() => setIsCreating(true)}>Create the first one</Button>
                     </div>
                 )}
             </div>
 
-            {/* Usage Tip */}
-            <div className="p-4 bg-indigo-950/20 border border-indigo-900/40 rounded-xl flex gap-3">
-                <Info className="h-5 w-5 text-indigo-400 flex-shrink-0" />
-                <div className="text-xs text-indigo-300">
-                    <p className="font-bold uppercase tracking-widest mb-1">Developer Implementation Helper</p>
-                    <p className="mb-2">Use the following React hook pattern to consume these flags in the frontend:</p>
-                    <pre className="bg-slate-950 p-3 rounded font-mono text-[10px] text-indigo-400 border border-indigo-900/30">
-                        {`const { isEnabled } = useFeatureFlag('${flags[0]?.name || 'feature_name'}');\nif (isEnabled) return <NewFeature />;`}
-                    </pre>
+            {/* Read-Only Notice */}
+            <div className="p-4 bg-blue-950/20 border border-blue-900/40 rounded-xl flex gap-3">
+                <Info className="h-5 w-5 text-blue-400 flex-shrink-0" />
+                <div className="text-xs text-blue-300">
+                    <p className="font-bold uppercase tracking-widest mb-1">Read-Only Monitor</p>
+                    <p>This page displays current feature flag status for monitoring purposes. Feature flag management requires admin access.</p>
                 </div>
             </div>
         </div>

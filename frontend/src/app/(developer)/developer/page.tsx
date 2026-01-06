@@ -15,6 +15,7 @@ import {
     XCircle,
     Terminal,
     AlertTriangle,
+    AlertCircle,
     RefreshCw
 } from 'lucide-react';
 import { useAuthStore } from '@/store/auth';
@@ -67,15 +68,7 @@ export default function DeveloperDashboard() {
         fetchData();
     }, []);
 
-    const toggleMaintenance = async () => {
-        try {
-            const res = await api.post('/system/maintenance/toggle/');
-            setMaintenance(res.data);
-            toast.success(`Maintenance Mode ${res.data.is_active ? 'Activated' : 'Deactivated'}`);
-        } catch (error) {
-            toast.error('Failed to toggle maintenance mode');
-        }
-    };
+    // Toggle function removed - use dedicated maintenance page for control
 
     if (isLoading && !stats) {
         return (
@@ -151,13 +144,18 @@ export default function DeveloperDashboard() {
                         <Lock className={`h-4 w-4 ${maintenance?.is_active ? 'text-yellow-400' : 'text-slate-600'}`} />
                     </CardHeader>
                     <CardContent>
-                        <div className="flex items-center justify-between">
+                        <div className="space-y-2">
                             <div className="text-2xl font-bold uppercase">{maintenance?.is_active ? 'ON' : 'OFF'}</div>
-                            <Button size="sm" onClick={toggleMaintenance} variant={maintenance?.is_active ? 'destructive' : 'secondary'} className="h-7 text-[10px] font-bold">
-                                TOGGLE
+                            <p className="text-xs text-slate-500 font-mono">Login blocker system</p>
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                className="w-full h-7 text-[10px] font-bold bg-slate-800 border-slate-700 hover:bg-slate-700"
+                                onClick={() => window.location.href = '/developer/maintenance'}
+                            >
+                                Configure →
                             </Button>
                         </div>
-                        <p className="text-xs text-slate-500 mt-1 font-mono">Login blocker system</p>
                     </CardContent>
                 </Card>
             </div>
@@ -202,28 +200,30 @@ export default function DeveloperDashboard() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Shield className="h-5 w-5 text-purple-400" />
-                            Quick Actions
+                            Portal Navigation
                         </CardTitle>
+                        <CardDescription className="text-slate-500">Access developer tools and monitoring</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-2">
-                        <Button className="w-full justify-start font-mono text-xs uppercase bg-purple-600 hover:bg-purple-700 h-10" onClick={() => (window.location.href = '/admin')}>
-                            Open Django Admin
-                        </Button>
                         <Button className="w-full justify-start font-mono text-xs uppercase bg-slate-800 hover:bg-slate-700 border border-slate-700 h-10" onClick={() => (window.location.href = '/developer/maintenance')}>
-                            Configure Login Blocking
+                            <Lock className="h-4 w-4 mr-2" />
+                            Maintenance Control
                         </Button>
                         <Button className="w-full justify-start font-mono text-xs uppercase bg-slate-800 hover:bg-slate-700 border border-slate-700 h-10" onClick={() => (window.location.href = '/developer/database')}>
-                            Run SQL Queries
+                            <Database className="h-4 w-4 mr-2" />
+                            Database Inspector
+                        </Button>
+                        <Button className="w-full justify-start font-mono text-xs uppercase bg-slate-800 hover:bg-slate-700 border border-slate-700 h-10" onClick={() => (window.location.href = '/developer/stats')}>
+                            <Activity className="h-4 w-4 mr-2" />
+                            System Stats
                         </Button>
                         <div className="pt-4 border-t border-slate-800 mt-4">
-                            <div className="bg-red-950/20 border border-red-900/50 p-3 rounded-md">
-                                <p className="text-[10px] font-bold text-red-400 flex items-center gap-1 mb-1 uppercase tracking-widest">
-                                    <AlertTriangle className="h-3 w-3" />
-                                    Danger Zone
+                            <div className="bg-blue-950/20 border border-blue-900/40 p-3 rounded-md">
+                                <p className="text-[10px] font-bold text-blue-400 flex items-center gap-1 mb-1 uppercase tracking-widest">
+                                    <AlertCircle className="h-3 w-3" />
+                                    Read-Only Portal
                                 </p>
-                                <Button size="sm" variant="destructive" className="w-full h-8 text-[10px] font-bold opacity-50 hover:opacity-100 uppercase transition-opacity">
-                                    Purge Expired Sessions
-                                </Button>
+                                <p className="text-[10px] text-blue-300">This portal is for monitoring only. Critical system changes require admin access.</p>
                             </div>
                         </div>
                     </CardContent>

@@ -59,6 +59,22 @@ api.interceptors.response.use(
         const isAuthEndpoint = originalRequest.url?.includes('/auth/login/') || originalRequest.url?.includes('/auth/register/');
 
         if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
+            // Check if this is a maintenance mode logout
+            const responseData = error.response?.data as { logout?: boolean } | undefined;
+            if (responseData?.logout === true) {
+                // User was logged out due to maintenance mode
+                if (typeof window !== 'undefined') {
+                    const { useAuthStore } = await import('@/store/auth');
+                    localStorage.removeItem('accessToken');
+                    localStorage.removeItem('refreshToken');
+                    useAuthStore.setState({ user: null, accessToken: null, isAuthenticated: false });
+
+                    // Redirect to login with maintenance message
+                    window.location.href = '/login';
+                }
+                return Promise.reject(error);
+            }
+
             originalRequest._retry = true;
 
             try {

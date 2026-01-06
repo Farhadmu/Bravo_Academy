@@ -49,20 +49,19 @@ class MaintenanceModeViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class FeatureFlagViewSet(viewsets.ModelViewSet):
+
+class FeatureFlagViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Read-only viewset for feature flags.
+    Allows viewing current flag states but not modifying them.
+    Use Django admin for feature flag management.
+    """
     queryset = FeatureFlag.objects.all()
     serializer_class = FeatureFlagSerializer
     permission_classes = [IsDeveloper]
     
-    @action(detail=True, methods=['post'])
-    def toggle(self, request, pk=None):
-        """Toggle a feature flag."""
-        flag = self.get_object()
-        flag.is_enabled = not flag.is_enabled
-        flag.updated_by = request.user
-        flag.save()
-        serializer = self.get_serializer(flag)
-        return Response(serializer.data)
+    # Toggle action removed - use Django admin to modify flags
+
 
 
 class SystemStatsViewSet(viewsets.ViewSet):
