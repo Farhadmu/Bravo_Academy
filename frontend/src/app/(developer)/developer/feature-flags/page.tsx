@@ -4,16 +4,11 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
+
 import {
     Flag,
-    Plus,
-    Trash2,
     Search,
     RefreshCw,
-    Terminal,
-    Shield,
     Users,
     Info
 } from 'lucide-react';
@@ -32,14 +27,27 @@ export default function FeatureFlags() {
     const [flags, setFlags] = useState<FeatureFlag[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const fetchFlags = async () => {
         setIsLoading(true);
         try {
             const res = await api.get('/system/feature-flags/');
-            setFlags(res.data);
+            // Ensure res.data is an array before setting state
+            if (Array.isArray(res.data)) {
+                setFlags(res.data);
+            } else {
+                console.error('Unexpected response format for feature flags:', res.data);
+                setFlags([]);
+            }
         } catch (error) {
+            console.error('Error fetching feature flags:', error);
             toast.error('Failed to load feature flags');
+            setFlags([]);
         } finally {
             setIsLoading(false);
         }
@@ -48,13 +56,31 @@ export default function FeatureFlags() {
     // Mutation operations removed - this is now a read-only monitor
 
     useEffect(() => {
-        fetchFlags();
-    }, []);
+        if (mounted) {
+            fetchFlags();
+        }
+    }, [mounted]);
 
-    const filteredFlags = flags.filter(f =>
-        f.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        f.description.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Handle initial state and non-array data gracefully
+    const safeFlags = Array.isArray(flags) ? flags : [];
+    const searchLower = searchTerm.toLowerCase();
+
+    const filteredFlags = safeFlags.filter(f => {
+        if (!f) return false;
+
+        const nameMatch = (f.name || '').toLowerCase().includes(searchLower);
+        const descMatch = (f.description || '').toLowerCase().includes(searchLower);
+
+        return nameMatch || descMatch;
+    });
+
+    if (!mounted) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <RefreshCw className="h-8 w-8 text-indigo-500 animate-spin" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-8">
@@ -106,7 +132,7 @@ export default function FeatureFlags() {
                             <CardContent className="pt-4 border-t border-slate-800">
                                 <div className="flex items-center gap-1 text-[10px] text-slate-500">
                                     <Users className="h-3 w-3" />
-                                    {flag.enabled_for_roles.length > 0 ? flag.enabled_for_roles.join(', ') : 'All Roles'}
+                                    {(flag.enabled_for_roles?.length || 0) > 0 ? flag.enabled_for_roles?.join(', ') : 'All Roles'}
                                 </div>
                             </CardContent>
                         </Card>
