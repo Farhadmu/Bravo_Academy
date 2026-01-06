@@ -1,4 +1,5 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
+import { useWakeupStore } from '@/components/common/BackendWakeupManager';
 
 // Create generic axios instance
 const api: AxiosInstance = axios.create({
@@ -14,11 +15,13 @@ api.interceptors.request.use(
         // Handle cold start detection
         const isClient = typeof window !== 'undefined';
         if (isClient) {
-            const { useWakeupStore } = require('@/components/common/BackendWakeupManager');
-
             // Start a timer to check if request takes too long
             const timerId = setTimeout(() => {
-                useWakeupStore.getState().setWakingUp(true);
+                try {
+                    useWakeupStore.getState().setWakingUp(true);
+                } catch (e) {
+                    console.error('Failed to set waking up state:', e);
+                }
             }, 2500); // Trigger notification after 2.5s of no response
 
             (config as any)._wakeupTimerId = timerId;
@@ -39,8 +42,11 @@ api.interceptors.response.use(
         const timerId = (response.config as any)._wakeupTimerId;
         if (timerId) {
             clearTimeout(timerId);
-            const { useWakeupStore } = require('@/components/common/BackendWakeupManager');
-            useWakeupStore.getState().setWakingUp(false);
+            try {
+                useWakeupStore.getState().setWakingUp(false);
+            } catch (e) {
+                console.error('Failed to clear waking up state:', e);
+            }
         }
         return response;
     },
@@ -50,8 +56,11 @@ api.interceptors.response.use(
         // Cleanup timer on error too
         if (originalRequest?._wakeupTimerId) {
             clearTimeout(originalRequest._wakeupTimerId);
-            const { useWakeupStore } = require('@/components/common/BackendWakeupManager');
-            useWakeupStore.getState().setWakingUp(false);
+            try {
+                useWakeupStore.getState().setWakingUp(false);
+            } catch (e) {
+                console.error('Failed to clear waking up state on error:', e);
+            }
         }
 
         // If error is 401 and we haven't retried yet

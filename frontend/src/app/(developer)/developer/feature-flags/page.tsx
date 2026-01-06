@@ -27,54 +27,36 @@ export default function FeatureFlags() {
     const [flags, setFlags] = useState<FeatureFlag[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
 
     const fetchFlags = async () => {
         setIsLoading(true);
         try {
             const res = await api.get('/system/feature-flags/');
-            // Ensure res.data is an array before setting state
-            if (Array.isArray(res.data)) {
+            if (res.data && Array.isArray(res.data)) {
                 setFlags(res.data);
             } else {
-                console.error('Unexpected response format for feature flags:', res.data);
                 setFlags([]);
             }
         } catch (error) {
-            console.error('Error fetching feature flags:', error);
+            console.error('Failed to load feature flags:', error);
             toast.error('Failed to load feature flags');
-            setFlags([]);
         } finally {
             setIsLoading(false);
         }
     };
 
-    // Mutation operations removed - this is now a read-only monitor
-
     useEffect(() => {
-        if (mounted) {
-            fetchFlags();
-        }
-    }, [mounted]);
+        fetchFlags();
+    }, []);
 
-    // Handle initial state and non-array data gracefully
-    const safeFlags = Array.isArray(flags) ? flags : [];
-    const searchLower = searchTerm.toLowerCase();
-
-    const filteredFlags = safeFlags.filter(f => {
+    const filteredFlags = (flags || []).filter(f => {
         if (!f) return false;
-
-        const nameMatch = (f.name || '').toLowerCase().includes(searchLower);
-        const descMatch = (f.description || '').toLowerCase().includes(searchLower);
-
-        return nameMatch || descMatch;
+        const search = (searchTerm || '').toLowerCase();
+        return (f.name || '').toLowerCase().includes(search) ||
+            (f.description || '').toLowerCase().includes(search);
     });
 
-    if (!mounted) {
+    if (isLoading && flags.length === 0) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
                 <RefreshCw className="h-8 w-8 text-indigo-500 animate-spin" />
@@ -105,34 +87,32 @@ export default function FeatureFlags() {
                 />
             </div>
 
-
-
             {/* Flags Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {isLoading ? (
                     Array(6).fill(0).map((_, i) => (
-                        <div key={i} className="h-48 bg-slate-900 animate-pulse rounded-xl border border-slate-800"></div>
+                        <div key={`skeleton-${i}`} className="h-48 bg-slate-900 animate-pulse rounded-xl border border-slate-800"></div>
                     ))
                 ) : filteredFlags.length > 0 ? (
                     filteredFlags.map((flag) => (
-                        <Card key={flag.id} className={`bg-slate-900 border-slate-800 hover:border-indigo-500/30 transition-all ${flag.is_enabled ? 'ring-1 ring-indigo-500/20 shadow-lg shadow-indigo-900/10' : 'opacity-60'}`}>
+                        <Card key={flag?.id || Math.random().toString()} className={`bg-slate-900 border-slate-800 hover:border-indigo-500/30 transition-all ${flag?.is_enabled ? 'ring-1 ring-indigo-500/20 shadow-lg shadow-indigo-900/10' : 'opacity-60'}`}>
                             <CardHeader className="pb-2">
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2">
-                                        <CardTitle className="text-white font-mono text-sm uppercase tracking-wider">{flag.name}</CardTitle>
-                                        {flag.is_enabled ? (
+                                        <CardTitle className="text-white font-mono text-sm uppercase tracking-wider">{flag?.name || 'Unnamed Flag'}</CardTitle>
+                                        {flag?.is_enabled ? (
                                             <span className="text-[10px] bg-green-500/10 text-green-400 px-1.5 py-0.5 rounded border border-green-500/20 font-bold">ENABLED</span>
                                         ) : (
                                             <span className="text-[10px] bg-slate-500/10 text-slate-400 px-1.5 py-0.5 rounded border border-slate-500/20 font-bold">DISABLED</span>
                                         )}
                                     </div>
-                                    <CardDescription className="text-slate-400 text-xs line-clamp-2 h-8">{flag.description || 'No description provided.'}</CardDescription>
+                                    <CardDescription className="text-slate-400 text-xs line-clamp-2 h-8">{flag?.description || 'No description provided.'}</CardDescription>
                                 </div>
                             </CardHeader>
                             <CardContent className="pt-4 border-t border-slate-800">
                                 <div className="flex items-center gap-1 text-[10px] text-slate-500">
                                     <Users className="h-3 w-3" />
-                                    {(flag.enabled_for_roles?.length || 0) > 0 ? flag.enabled_for_roles?.join(', ') : 'All Roles'}
+                                    {(flag?.enabled_for_roles?.length || 0) > 0 ? (flag?.enabled_for_roles || []).join(', ') : 'All Roles'}
                                 </div>
                             </CardContent>
                         </Card>
