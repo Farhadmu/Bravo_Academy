@@ -61,8 +61,7 @@ export default function DeveloperLayout({
     ];
 
     const portalLinks = [
-        { href: '/admin/dashboard', label: 'Admin Portal', icon: Shield },
-        { href: '/dashboard', label: 'Student Portal', icon: Eye },
+        { href: '/dashboard', label: 'Return to Site', icon: Eye },
     ];
 
     return (

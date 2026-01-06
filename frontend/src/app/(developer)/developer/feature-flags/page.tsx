@@ -130,7 +130,7 @@ export default function FeatureFlags() {
                 <Info className="h-5 w-5 text-blue-400 flex-shrink-0" />
                 <div className="text-xs text-blue-300">
                     <p className="font-bold uppercase tracking-widest mb-1">Read-Only Monitor</p>
-                    <p>This page displays current feature flag status for monitoring purposes. Feature flag management requires admin access.</p>
+                    <p>This page displays current feature flag status for monitoring purposes. Feature flag management requires master developer access.</p>
                 </div>
             </div>
         </div>

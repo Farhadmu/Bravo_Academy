@@ -223,7 +223,7 @@ export default function DeveloperDashboard() {
                                     <AlertCircle className="h-3 w-3" />
                                     Read-Only Portal
                                 </p>
-                                <p className="text-[10px] text-blue-300">This portal is for monitoring only. Critical system changes require admin access.</p>
+                                <p className="text-[10px] text-blue-300">This portal is for monitoring only. Critical system changes require master developer access.</p>
                             </div>
                         </div>
                     </CardContent>
