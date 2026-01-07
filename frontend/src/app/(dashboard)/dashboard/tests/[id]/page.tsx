@@ -131,10 +131,33 @@ export default function TestRunnerPage({ params }: { params: Promise<{ id: strin
         }
     }, [timeLeft, loading, isSubmitted, currentQuestionIndex, questions]);
 
+    // Sound Logic for WAT
+    const playBeep = () => {
+        try {
+            const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 note
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
+
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.1);
+        } catch (err) {
+            console.error("Audio play failed:", err);
+        }
+    };
+
     // Separate effect for WAT timer and auto-advance
     useEffect(() => {
         if (!loading && !isSubmitted && questions[currentQuestionIndex]?.question_type === 'wat') {
             setWatTimeLeft(10); // Reset to 10s on question change
+            playBeep(); // Play sound immediately on change
 
             const timer = setInterval(() => {
                 setWatTimeLeft((prev) => {
@@ -158,13 +181,13 @@ export default function TestRunnerPage({ params }: { params: Promise<{ id: strin
 
             return () => clearInterval(timer);
         }
-    }, [currentQuestionIndex, loading, isSubmitted, questions.length]); // Removed 'questions' dependency to avoid deep update loops, length is usually enough
+    }, [currentQuestionIndex, loading, isSubmitted, questions.length]);
 
     useEffect(() => {
         if (!loading && timeLeft === 0 && !isSubmitted && !submissionInProgress.current) {
-            handleSubmit(true, answers);
+            handleSubmit(true, answersRef.current);
         }
-    }, [timeLeft, loading, isSubmitted, answers]);
+    }, [timeLeft, loading, isSubmitted]);
 
 
     const handleOptionSelect = async (optionId: string) => {
@@ -250,10 +273,6 @@ export default function TestRunnerPage({ params }: { params: Promise<{ id: strin
                         {currentQuestion.question_type === 'wat' ? (
                             <div className="flex flex-col items-center justify-center py-20">
                                 <h1 className="text-6xl font-black text-gray-900 mb-8 tracking-wider">{currentQuestion.question_text}</h1>
-                                { /* Progress bar removed */}
-                                <div className="text-2xl font-bold text-blue-600 animate-pulse">
-                                    {watTimeLeft}s
-                                </div>
                                 <p className="mt-8 text-gray-500 italic">Write a sentence with this word on your paper.</p>
                             </div>
                         ) : (
@@ -298,7 +317,7 @@ export default function TestRunnerPage({ params }: { params: Promise<{ id: strin
                         </Button>
                     ) : (
                         <Button onClick={handleNext} disabled={currentQuestion.question_type === 'wat'}>
-                            {currentQuestion.question_type === 'wat' ? `Auto-advancing in ${watTimeLeft}s` : 'Next Question'}
+                            {currentQuestion.question_type === 'wat' ? 'Auto-advancing...' : 'Next Question'}
                         </Button>
                     )}
                 </CardFooter>

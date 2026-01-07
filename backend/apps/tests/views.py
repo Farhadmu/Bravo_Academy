@@ -11,6 +11,7 @@ class TestViewSet(viewsets.ModelViewSet):
     queryset = Test.objects.all()
     serializer_class = TestSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    filterset_fields = ['category', 'is_active', 'is_free_sample', 'is_bank']
 
     def get_queryset(self):
         """Return tests ordered by creation date ascending (Set 1, Set 2...)."""

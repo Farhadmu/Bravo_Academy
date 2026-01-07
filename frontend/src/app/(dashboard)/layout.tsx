@@ -44,7 +44,9 @@ export default function DashboardLayout({
 
     const sidebarLinks = [
         { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
-        { href: '/dashboard/tests', label: 'Take IQ Test', icon: Brain },
+        { href: '/dashboard/tests?category=verbal', label: 'Verbal IQ', icon: Brain },
+        { href: '/dashboard/tests?category=non-verbal', label: 'Non-Verbal IQ', icon: Brain },
+        { href: '/dashboard/tests?category=wat', label: 'Word Association (WAT)', icon: Brain },
         { href: '/dashboard/results', label: 'My Results', icon: History },
         { href: '/dashboard/profile', label: 'Profile', icon: User },
     ];

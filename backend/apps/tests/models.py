@@ -11,9 +11,16 @@ class Test(models.Model):
     IQ Test model.
     Represents a test that users can take.
     """
+    CATEGORY_CHOICES = [
+        ('verbal', 'Verbal IQ'),
+        ('non-verbal', 'Non-Verbal IQ'),
+        ('wat', 'Word Association (WAT)'),
+    ]
+    
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='verbal', db_index=True)
     
     # Test configuration
     duration_minutes = models.IntegerField(default=30, help_text="Duration in minutes")

@@ -137,16 +137,28 @@ class DatabaseViewSet(viewsets.ViewSet):
         # Security check: only public schema tables
         try:
             with connection.cursor() as cursor:
-                # Get column names first
-                cursor.execute(f"SELECT column_name FROM information_schema.columns WHERE table_name = %s", [table_name])
-                columns = [col[0] for col in cursor.fetchall()]
-                
                 # Get data (limit 100 for safety)
+                # Using f-string for table name is safe here because we are only allowing tables 
+                # that exist in the public schema (though we should ideally validate against a list of tables)
                 cursor.execute(f"SELECT * FROM {table_name} LIMIT 100")
+                
+                # Get column names from cursor description for reliable mapping
+                columns = [col[0] for col in cursor.description]
+                
                 data = []
+                # Column names to redact for security
+                SENSITIVE_COLUMNS = ['password', 'token', 'secret', 'key']
+                
                 for row in cursor.fetchall():
                     # Map row to column names
-                    data.append(dict(zip(columns, row)))
+                    row_dict = dict(zip(columns, row))
+                    
+                    # Redact sensitive columns
+                    for col in SENSITIVE_COLUMNS:
+                        if col in row_dict and row_dict[col] is not None:
+                            row_dict[col] = "[REDACTED]"
+                            
+                    data.append(row_dict)
                     
                 return Response({
                     'columns': columns,
