@@ -1,6 +1,8 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.filters import SearchFilter, OrderingFilter
+from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
 from .models import Test, TestSession
 from .serializers import TestSerializer, TestSessionSerializer
@@ -12,9 +14,9 @@ class TestViewSet(viewsets.ModelViewSet):
     serializer_class = TestSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     filter_backends = [
-        'django_filters.rest_framework.DjangoFilterBackend',
-        'rest_framework.filters.SearchFilter',
-        'rest_framework.filters.OrderingFilter'
+        DjangoFilterBackend,
+        SearchFilter,
+        OrderingFilter
     ]
     filterset_fields = ['category', 'is_active', 'is_free_sample', 'is_bank']
 
