@@ -31,6 +31,10 @@ export default function AdminUsersPage() {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [page, setPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const [nextPage, setNextPage] = useState<string | null>(null);
+    const [prevPage, setPrevPage] = useState<string | null>(null);
     const [resetPasswordUser, setResetPasswordUser] = useState<User | null>(null);
     const [newPassword, setNewPassword] = useState('');
     const [actionLoading, setActionLoading] = useState(false);
@@ -42,17 +46,23 @@ export default function AdminUsersPage() {
     });
 
     useEffect(() => {
-        fetchUsers();
-    }, []);
+        fetchUsers(page);
+    }, [page]);
 
-    const fetchUsers = async () => {
+    const fetchUsers = async (pageNumber: number) => {
         try {
             setLoading(true);
-            const response = await api.get('/auth/users/');
+            const response = await api.get(`/auth/users/?page=${pageNumber}`);
             if (Array.isArray(response.data)) {
                 setUsers(response.data);
+                setTotalCount(response.data.length);
+                setNextPage(null);
+                setPrevPage(null);
             } else if (response.data.results) {
                 setUsers(response.data.results);
+                setTotalCount(response.data.count);
+                setNextPage(response.data.next);
+                setPrevPage(response.data.previous);
             }
             setLoading(false);
         } catch (err) {
@@ -195,6 +205,33 @@ export default function AdminUsersPage() {
                             </tbody>
                         </table>
                     </div>
+
+                    {/* Pagination Controls */}
+                    {totalCount > 0 && (
+                        <div className="flex items-center justify-between mt-6 px-2">
+                            <p className="text-sm text-gray-500">
+                                Showing <span className="font-medium">{users.length}</span> of <span className="font-medium">{totalCount}</span> users
+                            </p>
+                            <div className="flex gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={!prevPage || loading}
+                                    onClick={() => setPage(p => p - 1)}
+                                >
+                                    Previous
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={!nextPage || loading}
+                                    onClick={() => setPage(p => p + 1)}
+                                >
+                                    Next
+                                </Button>
+                            </div>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 
