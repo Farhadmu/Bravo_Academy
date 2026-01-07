@@ -31,6 +31,7 @@ def seed_data():
     test_name = "IQ Test - Set 1"
     test, created = Test.objects.get_or_create(
         name=test_name,
+        category='verbal' if 'Non-Verbal' not in locals().get('test_name', '') and 'WAT' not in locals().get('test_name', '') else ('non-verbal' if 'Non-Verbal' in locals().get('test_name', '') else 'wat'),
         defaults={
             'description': "Comprehensive IQ evaluation with 100 questions. You have 30 minutes.",
             'duration_minutes': 30,

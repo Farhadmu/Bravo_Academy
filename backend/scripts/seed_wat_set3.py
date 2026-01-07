@@ -48,6 +48,7 @@ def seed_wat_set3():
     
     test, created = Test.objects.get_or_create(
         name=test_name,
+        category='verbal' if 'Non-Verbal' not in locals().get('test_name', '') and 'WAT' not in locals().get('test_name', '') else ('non-verbal' if 'Non-Verbal' in locals().get('test_name', '') else 'wat'),
         defaults={
             'description': f"Word Association Test Set 3. You will see {count} words, one by one, for 10 seconds each.",
             'duration_minutes': duration, 

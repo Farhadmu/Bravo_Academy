@@ -28,6 +28,7 @@ def seed_data():
     # To make it "Premium" but with 0 price, we set is_free_sample=False and price=0
     test, created = Test.objects.get_or_create(
         name=test_name,
+        category='verbal' if 'Non-Verbal' not in locals().get('test_name', '') and 'WAT' not in locals().get('test_name', '') else ('non-verbal' if 'Non-Verbal' in locals().get('test_name', '') else 'wat'),
         defaults={
             'description': "Advanced IQ evaluation with 100 premium questions. Recommended for enrolled students.",
             'duration_minutes': 30,

@@ -19,6 +19,7 @@ export default function EditTestPage({ params }: { params: Promise<{ id: string 
     const [formData, setFormData] = useState({
         name: '',
         description: '',
+        category: 'verbal',
         duration_minutes: 30,
         total_questions: 100,
         price: '0.00',
@@ -36,10 +37,11 @@ export default function EditTestPage({ params }: { params: Promise<{ id: string 
     const fetchTest = async () => {
         try {
             const res = await api.get(`/tests/tests/${id}/`);
-            const { name, description, duration_minutes, total_questions, price, passing_score, is_free_sample, is_active } = res.data;
+            const { name, description, category, duration_minutes, total_questions, price, passing_score, is_free_sample, is_active } = res.data;
             setFormData({
                 name: name || '',
                 description: description || '',
+                category: category || 'verbal',
                 duration_minutes: duration_minutes || 0,
                 total_questions: total_questions || 0,
                 price: price || '0.00',
@@ -110,6 +112,21 @@ export default function EditTestPage({ params }: { params: Promise<{ id: string 
                                 placeholder="e.g., Advanced IQ Evaluation"
                                 required
                             />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="category">Category</Label>
+                            <select
+                                id="category"
+                                name="category"
+                                value={formData.category}
+                                onChange={(e) => setFormData(p => ({ ...p, category: e.target.value as any }))}
+                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                required
+                            >
+                                <option value="verbal">Verbal IQ</option>
+                                <option value="non-verbal">Non-Verbal IQ</option>
+                                <option value="wat">Word Association (WAT)</option>
+                            </select>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="description">Description</Label>

@@ -21,6 +21,7 @@ def revert_to_sets():
             print("Set 1 not found. Creating Set 1...")
             set1 = Test.objects.create(
                 name="IQ Test - Set 1",
+        category='verbal' if 'Non-Verbal' not in locals().get('test_name', '') and 'WAT' not in locals().get('test_name', '') else ('non-verbal' if 'Non-Verbal' in locals().get('test_name', '') else 'wat'),
                 duration_minutes=30,
                 total_questions=100,
                 price=0.00,

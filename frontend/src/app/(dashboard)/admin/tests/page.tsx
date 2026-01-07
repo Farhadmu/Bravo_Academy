@@ -17,6 +17,7 @@ interface Test {
     is_free: boolean;
     price: string;
     is_active: boolean;
+    category: 'verbal' | 'non-verbal' | 'wat';
     created_at: string;
 }
 
@@ -117,6 +118,7 @@ export default function AdminTestsPage() {
                                     <th className="p-4 font-medium text-gray-500">Duration</th>
                                     <th className="p-4 font-medium text-gray-500">Questions</th>
                                     <th className="p-4 font-medium text-gray-500">Price</th>
+                                    <th className="p-4 font-medium text-gray-500">Category</th>
                                     <th className="p-4 font-medium text-gray-500">Type</th>
                                     <th className="p-4 font-medium text-gray-500 text-right">Actions</th>
                                 </tr>
@@ -132,6 +134,15 @@ export default function AdminTestsPage() {
                                         <td className="p-4 text-gray-600">{test.total_questions} Qs</td>
                                         <td className="p-4 font-medium">
                                             {parseFloat(test.price) === 0 ? 'Free' : `৳${test.price}`}
+                                        </td>
+                                        <td className="p-4 text-gray-600">
+                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${test.category === 'verbal' ? 'bg-blue-100 text-blue-800' :
+                                                    test.category === 'non-verbal' ? 'bg-purple-100 text-purple-800' :
+                                                        'bg-amber-100 text-amber-800'
+                                                }`}>
+                                                {test.category === 'verbal' ? 'Verbal' :
+                                                    test.category === 'non-verbal' ? 'Non-Verbal' : 'WAT'}
+                                            </span>
                                         </td>
                                         <td className="p-4">
                                             {test.is_free ? (
