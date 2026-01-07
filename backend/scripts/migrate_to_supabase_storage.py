@@ -3,12 +3,12 @@ import boto3
 from botocore.client import Config
 from pathlib import Path
 
-# Credentials
-ACCESS_KEY = "64805a1a9755e5f7086f9a97880af5ff"
-SECRET_KEY = "3d12548740cbdefd1184c9545cbff2e029df2b93f7d22d7aad5bfd9b8939cb7a"
-ENDPOINT_URL = "https://jjxusciiuvcjltkreozq.storage.supabase.co/storage/v1/s3"
-BUCKET_NAME = "media"
-REGION = "ap-south-1"
+# Credentials (Loaded from environment for security)
+ACCESS_KEY = os.getenv("AWS_ACCESS_KEY_ID")
+SECRET_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+ENDPOINT_URL = os.getenv("AWS_S3_ENDPOINT_URL", "https://jjxusciiuvcjltkreozq.storage.supabase.co/storage/v1/s3")
+BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME", "media")
+REGION = os.getenv("AWS_S3_REGION_NAME", "ap-south-1")
 
 def migrate_media():
     print(f"Connecting to Supabase S3 at {ENDPOINT_URL}...")

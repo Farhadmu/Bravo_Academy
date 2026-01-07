@@ -24,8 +24,8 @@ def seed():
             print(f"Creating superuser '{admin_username}'...")
             User.objects.create_superuser(
                 username=admin_username, 
-                email='admin@example.com', 
-                password='admin123'
+                email=os.getenv('SEED_ADMIN_EMAIL', 'admin@example.com'), 
+                password=os.getenv('SEED_ADMIN_PASSWORD', 'admin123')
             )
             print(f"Superuser '{admin_username}' created successfully.")
         else:
@@ -37,8 +37,8 @@ def seed():
             print(f"Creating student user '{student_username}'...")
             User.objects.create_user(
                 username=student_username, 
-                email='student@example.com', 
-                password='student123', 
+                email=os.getenv('SEED_STUDENT_EMAIL', 'student@example.com'), 
+                password=os.getenv('SEED_STUDENT_PASSWORD', 'student123'), 
                 role='student'
             )
             print(f"Student user '{student_username}' created successfully.")

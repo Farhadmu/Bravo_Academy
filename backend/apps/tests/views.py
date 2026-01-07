@@ -38,6 +38,15 @@ class TestViewSet(viewsets.ModelViewSet):
         """Optimized endpoint: Returns test details, session, and all questions in one call"""
         test = self.get_object()
         
+        # Security Hardening: Check access for premium tests
+        if not test.is_free and not (request.user.is_staff or request.user.role == 'developer'):
+            from apps.payments.models import UserTestAccess
+            if not UserTestAccess.objects.filter(user=request.user, test=test, is_active=True).exists():
+                return Response({
+                    "error": "Access Denied",
+                    "detail": "You have not purchased this test yet. Please complete the payment to gain access."
+                }, status=status.HTTP_403_FORBIDDEN)
+
         # Check for active session
         active_session = TestSession.objects.filter(
             user=request.user, 
@@ -66,6 +75,15 @@ class TestViewSet(viewsets.ModelViewSet):
     def start_session(self, request, pk=None):
         test = self.get_object()
         
+        # Security Hardening: Check access for premium tests
+        if not test.is_free and not (request.user.is_staff or request.user.role == 'developer'):
+            from apps.payments.models import UserTestAccess
+            if not UserTestAccess.objects.filter(user=request.user, test=test, is_active=True).exists():
+                return Response({
+                    "error": "Access Denied",
+                    "detail": "You have not purchased this test yet. Please complete the payment to gain access."
+                }, status=status.HTTP_403_FORBIDDEN)
+
         # Check for active session for this specific test
         active_session = TestSession.objects.filter(
             user=request.user, 
@@ -99,6 +117,11 @@ class TestViewSet(viewsets.ModelViewSet):
     def public_questions(self, request, pk=None):
         """Get questions for a specific virtual set from the bank."""
         test = self.get_object()
+        
+        # Security Hardening: Only allow public access to free sample tests or specific bank partitions
+        if not test.is_free_sample and not test.is_bank:
+             return Response({"error": "This test is not available for public preview."}, status=status.HTTP_403_FORBIDDEN)
+
         set_num = int(request.query_params.get('set_number', 1))
         
         from apps.questions.models import Question
@@ -121,6 +144,12 @@ class TestViewSet(viewsets.ModelViewSet):
     def public_evaluate(self, request, pk=None):
         """Evaluate answers for a public sample test."""
         test = self.get_object()
+        
+        # Security Hardening: ONLY allow evaluating if the test is a free sample.
+        # Premium tests must be taken via an authenticated session which doesn't expose answers in this way.
+        if not test.is_free_sample:
+            return Response({"error": "Evaluation is only available for free sample tests."}, status=status.HTTP_403_FORBIDDEN)
+
         user_answers = request.data.get('answers', {})
         
         from apps.questions.models import Question

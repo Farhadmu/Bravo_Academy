@@ -148,29 +148,44 @@ class DatabaseViewSet(viewsets.ViewSet):
         if not table_name:
             return Response({'error': 'Table name required'}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Security check: only public schema tables
         try:
             with connection.cursor() as cursor:
-                # Get data (limit 100 for safety)
-                # Using f-string for table name is safe here because we are only allowing tables 
-                # that exist in the public schema (though we should ideally validate against a list of tables)
-                cursor.execute(f"SELECT * FROM {table_name} LIMIT 100")
+                # Security check: Validate that the table exists in the public schema
+                cursor.execute("""
+                    SELECT EXISTS (
+                        SELECT 1 
+                        FROM information_schema.tables 
+                        WHERE table_schema = 'public' 
+                        AND table_name = %s
+                    )
+                """, [table_name])
+                
+                exists = cursor.fetchone()[0]
+                if not exists:
+                    return Response({'error': 'Invalid table name or table not found'}, status=status.HTTP_404_NOT_FOUND)
+
+                # Now it's safe to use the table name in a query since we validated it exists in public schema
+                # We still use f-string but ONLY after the explicit whitelist check above.
+                # PostgreSQL doesn't support binding table names as parameters.
+                cursor.execute(f'SELECT * FROM "{table_name}" LIMIT 100')
                 
                 # Get column names from cursor description for reliable mapping
                 columns = [col[0] for col in cursor.description]
                 
                 data = []
                 # Column names to redact for security
-                SENSITIVE_COLUMNS = ['password', 'token', 'secret', 'key']
+                SENSITIVE_COLUMNS = ['password', 'token', 'secret', 'key', 'access_key', 'fingerprint']
                 
                 for row in cursor.fetchall():
                     # Map row to column names
                     row_dict = dict(zip(columns, row))
                     
                     # Redact sensitive columns
-                    for col in SENSITIVE_COLUMNS:
-                        if col in row_dict and row_dict[col] is not None:
-                            row_dict[col] = "[REDACTED]"
+                    for col_name in columns:
+                        lower_name = col_name.lower()
+                        if any(sensitive in lower_name for sensitive in SENSITIVE_COLUMNS):
+                            if row_dict[col_name] is not None:
+                                row_dict[col_name] = "[REDACTED]"
                             
                     data.append(row_dict)
                     

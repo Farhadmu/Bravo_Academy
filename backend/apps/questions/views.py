@@ -4,7 +4,9 @@ from .serializers import QuestionSerializer, AdminQuestionSerializer
 
 class QuestionViewSet(viewsets.ModelViewSet):
     queryset = Question.objects.all()
-    permission_classes = [permissions.IsAuthenticated]
+    # Security Hardening: Only admins should access the question list/detail directly.
+    # Students get questions via the /api/tests/tests/{id}/start_test/ endpoint.
+    permission_classes = [permissions.IsAdminUser]
     pagination_class = None
 
     def get_serializer_class(self):

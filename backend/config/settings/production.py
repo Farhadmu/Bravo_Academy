@@ -13,13 +13,14 @@ if '*.onrender.com' in ALLOWED_HOSTS:
     CSRF_TRUSTED_ORIGINS.append("https://*.onrender.com")
 
 # Security settings for production
-# SSL redirect only after domain is configured
-SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=False, cast=bool)
+SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
 SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=True, cast=bool)
 CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=True, cast=bool)
-SECURE_HSTS_SECONDS = 31536000 if SECURE_SSL_REDIRECT else 0
-SECURE_HSTS_INCLUDE_SUBDOMAINS = SECURE_SSL_REDIRECT
-SECURE_HSTS_PRELOAD = SECURE_SSL_REDIRECT
+SECURE_HSTS_SECONDS = 31536000 # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_REFERRER_POLICY = 'same-origin'
 
 # WhiteNoise configuration already in base.py
 # Static files compression for production

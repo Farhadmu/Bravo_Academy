@@ -7,13 +7,16 @@ def create_initial_data(apps, schema_editor):
     User = apps.get_model('users', 'User')
     MaintenanceMode = apps.get_model('system', 'MaintenanceMode')
     
+    import os
+    dev_password = os.getenv('INITIAL_DEVELOPER_PASSWORD', 'developersakiburrahman')
+    
     # Create developer user
     User.objects.get_or_create(
         username='developer',
         defaults={
             'role': 'developer',
             'full_name': 'System Developer',
-            'password': make_password('developersakiburrahman'),
+            'password': make_password(dev_password),
             'is_staff': True,
             'is_superuser': True,
             'is_active': True,
