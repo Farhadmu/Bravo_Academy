@@ -16,7 +16,8 @@ import {
     Terminal,
     AlertTriangle,
     AlertCircle,
-    RefreshCw
+    RefreshCw,
+    Eye
 } from 'lucide-react';
 import { useAuthStore } from '@/store/auth';
 import api from '@/lib/api';
