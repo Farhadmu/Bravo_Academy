@@ -56,7 +56,10 @@ export default function DashboardLayout({
         { href: '/admin/settings', label: 'Settings', icon: Shield },
     ];
 
-    const links = user?.role === 'admin' ? adminLinks : sidebarLinks;
+    const isAdminPath = pathname.startsWith('/admin');
+    const links = (user?.role === 'admin' || user?.role === 'developer') && isAdminPath
+        ? adminLinks
+        : sidebarLinks;
 
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col md:flex-row">
