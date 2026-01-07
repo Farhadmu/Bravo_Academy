@@ -32,9 +32,16 @@ class MaintenanceModeViewSet(viewsets.ModelViewSet):
     def toggle(self, request):
         """Toggle maintenance mode on/off."""
         maintenance = MaintenanceMode.get_current()
+        old_status = maintenance.is_active
         maintenance.is_active = not maintenance.is_active
         maintenance.updated_by = request.user
         maintenance.save()
+        
+        # If activated, clear device fingerprints for targeted roles to force logout
+        if maintenance.is_active and not old_status:
+            from apps.users.models import User
+            User.objects.filter(role__in=maintenance.target_roles).update(device_fingerprint=None)
+            
         serializer = self.get_serializer(maintenance)
         return Response(serializer.data)
     
@@ -42,9 +49,16 @@ class MaintenanceModeViewSet(viewsets.ModelViewSet):
     def update_config(self, request):
         """Update maintenance mode configuration."""
         maintenance = MaintenanceMode.get_current()
+        old_status = maintenance.is_active
         serializer = self.get_serializer(maintenance, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.save(updated_by=request.user)
+            maintenance = serializer.save(updated_by=request.user)
+            
+            # If newly activated, clear device fingerprints for targeted roles
+            if maintenance.is_active and not old_status:
+                from apps.users.models import User
+                User.objects.filter(role__in=maintenance.target_roles).update(device_fingerprint=None)
+            
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

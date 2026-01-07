@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import api from '@/lib/api';
 
 export default function DashboardLayout({
     children,
@@ -35,7 +36,21 @@ export default function DashboardLayout({
     useEffect(() => {
         if (!isAuthenticated) {
             router.push('/login');
+            return;
         }
+
+        // Heartbeat to detect maintenance mode logout or session invalidation
+        const heartbeat = setInterval(async () => {
+            try {
+                // This call will be intercepted by MaintenanceModeMiddleware
+                await api.get('/health/');
+            } catch (err) {
+                // Axios interceptor will handle 401/logout automatically
+                console.error('Maintenance heartbeat failed:', err);
+            }
+        }, 60000); // Check every minute
+
+        return () => clearInterval(heartbeat);
     }, [isAuthenticated, router]);
 
     if (!mounted || !isAuthenticated) {
