@@ -217,6 +217,17 @@ export default function DeveloperDashboard() {
                             <Activity className="h-4 w-4 mr-2" />
                             System Stats
                         </Button>
+                        <div className="pt-2 space-y-2">
+                            <p className="px-2 mb-1 text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Testing Portals</p>
+                            <Button className="w-full justify-start font-mono text-[10px] uppercase bg-indigo-900/20 hover:bg-indigo-900/40 border border-indigo-500/30 text-indigo-300 h-9" onClick={() => (window.location.href = '/admin/dashboard')}>
+                                <Shield className="h-3.5 w-3.5 mr-2" />
+                                User Management (Admin)
+                            </Button>
+                            <Button className="w-full justify-start font-mono text-[10px] uppercase bg-blue-900/20 hover:bg-blue-900/40 border border-blue-500/30 text-blue-300 h-9" onClick={() => (window.location.href = '/dashboard')}>
+                                <Eye className="h-3.5 w-3.5 mr-2" />
+                                Student Portal
+                            </Button>
+                        </div>
                         <div className="pt-4 border-t border-slate-800 mt-4">
                             <div className="bg-blue-950/20 border border-blue-900/40 p-3 rounded-md">
                                 <p className="text-[10px] font-bold text-blue-400 flex items-center gap-1 mb-1 uppercase tracking-widest">
