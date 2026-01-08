@@ -66,13 +66,13 @@ export default function ResultsListPage() {
                         <Card key={result.id} className="transition-shadow hover:shadow-md">
                             <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
                                 <div className="flex items-center gap-4">
-                                    <div className={`p-3 rounded-full ${result.test_category === 'wat'
+                                    <div className={`p-3 rounded-full ${(result.test_category === 'wat' || result.test_category === 'verbal')
                                             ? 'bg-blue-100 text-blue-600'
                                             : result.passed
                                                 ? 'bg-green-100 text-green-600'
                                                 : 'bg-red-100 text-red-600'
                                         }`}>
-                                        {result.test_category === 'wat' ? <CheckCircle className="w-6 h-6" /> : (result.passed ? <CheckCircle className="w-6 h-6" /> : <XCircle className="w-6 h-6" />)}
+                                        {(result.test_category === 'wat' || result.test_category === 'verbal') ? <CheckCircle className="w-6 h-6" /> : (result.passed ? <CheckCircle className="w-6 h-6" /> : <XCircle className="w-6 h-6" />)}
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-lg text-gray-900">{result.test_name}</h3>
@@ -85,14 +85,14 @@ export default function ResultsListPage() {
 
                                 <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end">
                                     <div className="text-center">
-                                        <p className="text-xs text-gray-500 uppercase font-bold">{result.test_category === 'wat' ? 'Status' : 'Score'}</p>
-                                        <p className={`text-xl font-bold ${result.test_category === 'wat'
+                                        <p className="text-xs text-gray-500 uppercase font-bold">{(result.test_category === 'wat' || result.test_category === 'verbal') ? 'Status' : 'Score'}</p>
+                                        <p className={`text-xl font-bold ${(result.test_category === 'wat' || result.test_category === 'verbal')
                                                 ? 'text-blue-600'
                                                 : result.passed
                                                     ? 'text-green-600'
                                                     : 'text-red-600'
                                             }`}>
-                                            {result.test_category === 'wat' ? 'Completed' : `${parseFloat(result.score_percentage)}%`}
+                                            {(result.test_category === 'wat' || result.test_category === 'verbal') ? 'Completed' : `${parseFloat(result.score_percentage)}%`}
                                         </p>
                                     </div>
                                     <Link href={`/dashboard/results/${result.id}`}>

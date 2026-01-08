@@ -25,6 +25,10 @@ class ResultDetailSerializer(ResultSerializer):
         fields = ResultSerializer.Meta.fields + ['review_data']
 
     def get_review_data(self, obj):
+        # Do not return review data for practice tests (WAT, Verbal)
+        if obj.test.category in ['wat', 'verbal']:
+            return []
+
         from apps.questions.models import Question
         
         session = obj.test_session
