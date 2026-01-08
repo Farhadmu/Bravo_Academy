@@ -4,6 +4,7 @@ System app for developer tools and maintenance mode.
 import uuid
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 
 
 class MaintenanceMode(models.Model):
@@ -110,3 +111,123 @@ class FeatureFlag(models.Model):
         if not self.enabled_for_roles:
             return True  # Enabled for all if no role restriction
         return user.role in self.enabled_for_roles
+
+
+class LoginLog(models.Model):
+    """Track all login attempts with detailed device information."""
+    
+    STATUS_CHOICES = [
+        ('success', 'Success'),
+        ('failed', 'Failed'),
+    ]
+    
+    DEVICE_TYPE_CHOICES = [
+        ('mobile', 'Mobile'),
+        ('tablet', 'Tablet'),
+        ('laptop', 'Laptop'),
+        ('desktop', 'Desktop'),
+        ('unknown', 'Unknown'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
+    username_attempted = models.CharField(max_length=255, help_text="Username used in login attempt")
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+    ip_address = models.GenericIPAddressField()
+    device_fingerprint = models.CharField(max_length=255, blank=True)
+    device_model = models.CharField(max_length=255, blank=True, help_text="e.g., iPhone 14 Pro, HP EliteBook 840")
+    device_type = models.CharField(max_length=20, choices=DEVICE_TYPE_CHOICES, default='unknown')
+    browser = models.CharField(max_length=100, blank=True, help_text="e.g., Chrome 120, Safari 17")
+    os = models.CharField(max_length=100, blank=True, help_text="e.g., Android 13, Windows 11")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='success')
+    failure_reason = models.CharField(max_length=255, blank=True, null=True)
+    user_agent = models.TextField(help_text="Raw user agent string")
+    
+    class Meta:
+        app_label = 'system'
+        db_table = 'login_logs'
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['-timestamp']),
+            models.Index(fields=['ip_address']),
+            models.Index(fields=['status']),
+        ]
+    
+    def __str__(self):
+        return f"{self.username_attempted} - {self.status} - {self.timestamp}"
+
+
+class PageVisit(models.Model):
+    """Track page visits for analytics."""
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    session_id = models.CharField(max_length=255, db_index=True, help_text="Session identifier")
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+    url_path = models.CharField(max_length=500, help_text="e.g., /dashboard, /tests/123")
+    page_title = models.CharField(max_length=255, blank=True)
+    ip_address = models.GenericIPAddressField()
+    device_fingerprint = models.CharField(max_length=255, blank=True)
+    referrer = models.CharField(max_length=500, blank=True, null=True)
+    time_spent = models.IntegerField(default=0, help_text="Seconds spent on page")
+    
+    class Meta:
+        app_label = 'system'
+        db_table = 'page_visits'
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['-timestamp']),
+            models.Index(fields=['session_id']),
+            models.Index(fields=['url_path']),
+        ]
+    
+    def __str__(self):
+        user_str = self.user.username if self.user else "Anonymous"
+        return f"{user_str} - {self.url_path} - {self.timestamp}"
+
+
+class ActiveSession(models.Model):
+    """Track currently active user sessions."""
+    
+    DEVICE_TYPE_CHOICES = [
+        ('mobile', 'Mobile'),
+        ('tablet', 'Tablet'),
+        ('laptop', 'Laptop'),
+        ('desktop', 'Desktop'),
+        ('unknown', 'Unknown'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    session_key = models.CharField(max_length=255, unique=True, db_index=True)
+    login_time = models.DateTimeField(auto_now_add=True)
+    last_activity = models.DateTimeField(auto_now=True, db_index=True)
+    ip_address = models.GenericIPAddressField()
+    device_model = models.CharField(max_length=255, blank=True)
+    device_type = models.CharField(max_length=20, choices=DEVICE_TYPE_CHOICES, default='unknown')
+    browser = models.CharField(max_length=100, blank=True)
+    os = models.CharField(max_length=100, blank=True)
+    current_page = models.CharField(max_length=500, blank=True)
+    
+    class Meta:
+        app_label = 'system'
+        db_table = 'active_sessions'
+        ordering = ['-last_activity']
+        indexes = [
+            models.Index(fields=['-last_activity']),
+            models.Index(fields=['user']),
+        ]
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.session_key}"
+    
+    @property
+    def session_duration(self):
+        """Calculate session duration in seconds."""
+        return (timezone.now() - self.login_time).total_seconds()
+    
+    @property
+    def is_active(self):
+        """Check if session is still active (activity within last 30 minutes)."""
+        inactive_threshold = timezone.now() - timezone.timedelta(minutes=30)
+        return self.last_activity > inactive_threshold

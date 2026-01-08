@@ -25,6 +25,9 @@ from apps.payments.models import Payment, UserTestAccess
 User = get_user_model()
 
 
+from apps.system.utils import log_login_attempt
+
+
 class CustomTokenObtainPairView(TokenObtainPairView):
     """
     Custom login view with device tracking.
@@ -33,12 +36,23 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
     
     def post(self, request, *args, **kwargs):
+        username = request.data.get('username')
         # Proceed with normal login first to verify credentials
         try:
             response = super().post(request, *args, **kwargs)
         except Exception as e:
+            # Log failed attempt
+            if username:
+                user = User.objects.filter(username=username).first()
+                log_login_attempt(
+                    request, 
+                    user=user, 
+                    username_attempted=username, 
+                    status='failed', 
+                    failure_reason=str(e)
+                )
+            
             # Check if user exists but password failed
-            username = request.data.get('username')
             if username:
                 user_exists = User.objects.filter(username=username).exists()
                 if user_exists:
@@ -52,9 +66,9 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                         'detail': f'No account found with the username "{username}". Please check for typos.'
                     }, status=status.HTTP_401_UNAUTHORIZED)
             raise e
+
         if response.status_code == 200:
             # Login successful, now check device fingerprint and maintenance mode
-            username = request.data.get('username', '')
             device_fingerprint = request.data.get('device_fingerprint', '')
             
             try:
@@ -64,6 +78,13 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                 from apps.system.models import MaintenanceMode
                 maintenance = MaintenanceMode.get_current()
                 if maintenance.is_role_blocked(user.role):
+                    log_login_attempt(
+                        request, 
+                        user=user, 
+                        username_attempted=username, 
+                        status='failed', 
+                        failure_reason='Maintenance Mode'
+                    )
                     return Response({
                         'error': 'Maintenance Mode',
                         'message': maintenance.message,
@@ -72,6 +93,13 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
                 # Check if user can login from this device
                 if not user.can_login_from_device(device_fingerprint):
+                    log_login_attempt(
+                        request, 
+                        user=user, 
+                        username_attempted=username, 
+                        status='failed', 
+                        failure_reason='Multi-device login blocked'
+                    )
                     return Response({
                         'error': 'This ID is already logged in on another device. You cannot login using a different device with the same ID.'
                     }, status=status.HTTP_403_FORBIDDEN)
@@ -79,6 +107,9 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                 # Update device info
                 ip_address = get_client_ip(request)
                 user.update_device_info(device_fingerprint, ip_address)
+                
+                # Log successful login
+                log_login_attempt(request, user=user, username_attempted=username, status='success')
                 
             except User.DoesNotExist:
                 # Should not happen as super().post() was successful

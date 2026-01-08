@@ -5,8 +5,15 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import connection
-from .models import MaintenanceMode, FeatureFlag
-from .serializers import MaintenanceModeSerializer, FeatureFlagSerializer, SystemStatsSerializer
+from .models import MaintenanceMode, FeatureFlag, LoginLog, PageVisit, ActiveSession
+from .serializers import (
+    MaintenanceModeSerializer, FeatureFlagSerializer, SystemStatsSerializer,
+    LoginLogSerializer, PageVisitSerializer, ActiveSessionSerializer
+)
+from django.db.models import Count, Q
+from django.db.models.functions import TruncHour, TruncDay
+from django.utils import timezone
+from datetime import timedelta
 
 
 class IsDeveloper(permissions.BasePermission):
@@ -97,7 +104,7 @@ class SystemStatsViewSet(viewsets.ViewSet):
             'total_admins': User.objects.filter(role='admin').count(),
             'total_tests': Test.objects.count(),
             'total_questions': Question.objects.count(),
-            'active_sessions': TestSession.objects.filter(status='in_progress').count(),
+            'active_sessions': ActiveSession.objects.filter(last_activity__gte=timezone.now() - timedelta(minutes=30)).count(),
             'total_results': Result.objects.count(),
             'pending_payments': Payment.objects.filter(status='pending').count(),
             'database_size_mb': self._get_database_size()
@@ -115,6 +122,155 @@ class SystemStatsViewSet(viewsets.ViewSet):
                 return round(size_bytes / (1024 * 1024), 2)
         except:
             return None
+
+
+class LoginLogViewSet(viewsets.ReadOnlyModelViewSet):
+    """Read-only viewset for login logs."""
+    queryset = LoginLog.objects.all()
+    serializer_class = LoginLogSerializer
+    permission_classes = [IsDeveloper]
+    filterset_fields = ['status', 'device_type', 'os', 'browser']
+    search_fields = ['username_attempted', 'ip_address', 'device_model']
+    ordering_fields = ['timestamp']
+
+
+class ActiveSessionViewSet(viewsets.ReadOnlyModelViewSet):
+    """Read-only viewset for active user sessions."""
+    serializer_class = ActiveSessionSerializer
+    permission_classes = [IsDeveloper]
+    
+    def get_queryset(self):
+        # Only show sessions active in the last 30 minutes
+        threshold = timezone.now() - timedelta(minutes=30)
+        return ActiveSession.objects.filter(last_activity__gte=threshold).order_by('-last_activity')
+
+
+class MonitoringAnalyticsViewSet(viewsets.ViewSet):
+    """ViewSet for various monitoring analytics charts and stats."""
+    permission_classes = [IsDeveloper]
+    
+    @action(detail=False, methods=['get'])
+    def realtime_dashboard(self, request):
+        """Get data for real-time monitoring dashboard."""
+        now = timezone.now()
+        last_30_mins = now - timedelta(minutes=30)
+        today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        
+        # Active users now
+        active_count = ActiveSession.objects.filter(last_activity__gte=last_30_mins).count()
+        
+        # Visits today
+        visits_today = PageVisit.objects.filter(timestamp__gte=today).count()
+        
+        # Device type distribution (all time)
+        device_dist = LoginLog.objects.filter(status='success').values('device_type').annotate(count=Count('id'))
+        
+        # Hourly visits trend (last 24 hours)
+        last_24_hours = now - timedelta(hours=24)
+        hourly_visits = PageVisit.objects.filter(timestamp__gte=last_24_hours).annotate(
+            hour=TruncHour('timestamp')
+        ).values('hour').annotate(count=Count('id')).order_by('hour')
+        
+        return Response({
+            'active_now': active_count,
+            'visits_today': visits_today,
+            'device_distribution': device_dist,
+            'hourly_trend': hourly_visits
+        })
+
+    @action(detail=False, methods=['get'])
+    def device_stats(self, request):
+        """Get detailed device analytics."""
+        # Top device models
+        top_models = LoginLog.objects.filter(status='success').values('device_model', 'device_type').annotate(
+            count=Count('id')
+        ).order_by('-count')[:20]
+        
+        # OS distribution
+        os_dist = LoginLog.objects.filter(status='success').values('os').annotate(
+            count=Count('id')
+        ).order_by('-count')
+        
+        # Browser distribution
+        browser_dist = LoginLog.objects.filter(status='success').values('browser').annotate(
+            count=Count('id')
+        ).order_by('-count')
+        
+        return Response({
+            'top_models': top_models,
+            'os_distribution': os_dist,
+            'browser_distribution': browser_dist
+        })
+
+    @action(detail=False, methods=['get'])
+    def visit_stats(self, request):
+        """Get page visit analytics."""
+        now = timezone.now()
+        last_7_days = now - timedelta(days=7)
+        
+        # Top visited pages
+        top_pages = PageVisit.objects.values('url_path').annotate(
+            count=Count('id')
+        ).order_by('-count')[:15]
+        
+        # Daily visits (last 7 days)
+        daily_visits = PageVisit.objects.filter(timestamp__gte=last_7_days).annotate(
+            day=TruncDay('timestamp')
+        ).values('day').annotate(count=Count('id')).order_by('day')
+        
+        return Response({
+            'top_pages': top_pages,
+            'daily_trend': daily_visits
+        })
+
+
+class UserMonitoringViewSet(viewsets.ViewSet):
+    """View user details and analytics for monitoring."""
+    permission_classes = [IsDeveloper]
+    
+    def list(self, request):
+        """List students for monitoring selection."""
+        from apps.users.models import User
+        queryset = User.objects.filter(role='student')
+        
+        search = request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(username__icontains=search) | 
+                Q(full_name__icontains=search) | 
+                Q(email__icontains=search)
+            )
+            
+        # Basic list for picker
+        data = queryset.values('id', 'username', 'full_name', 'email', 'last_login')[:100]
+        return Response(data)
+
+    def retrieve(self, request, pk=None):
+        """Get full details for a specific student."""
+        from apps.users.models import User
+        from apps.users.serializers import UserSerializer
+        
+        try:
+            user = User.objects.get(id=pk)
+            serializer = UserSerializer(user)
+            user_data = serializer.data
+            
+            # Add monitoring data
+            user_data['login_history'] = LoginLogSerializer(
+                LoginLog.objects.filter(user=user).order_by('-timestamp')[:20], 
+                many=True
+            ).data
+            
+            user_data['recent_visits'] = PageVisitSerializer(
+                PageVisit.objects.filter(user=user).order_by('-timestamp')[:20], 
+                many=True
+            ).data
+            
+            # Dashboard stats (from users/views.py logic if available, or manual)
+            # For now just basic
+            return Response(user_data)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 class DatabaseViewSet(viewsets.ViewSet):
     """Database inspection for developer portal."""
     permission_classes = [IsDeveloper]

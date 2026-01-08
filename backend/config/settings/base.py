@@ -73,6 +73,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'apps.system.middleware.MaintenanceModeMiddleware',  # Check maintenance mode
+    'apps.system.middleware.MonitoringMiddleware',      # Log visits and sessions
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]

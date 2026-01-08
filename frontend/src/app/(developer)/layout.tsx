@@ -15,7 +15,9 @@ import {
     Users,
     Activity,
     Lock,
-    Eye
+    RefreshCw,
+    Eye,
+    Brain
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -60,6 +62,14 @@ export default function DeveloperLayout({
         { href: '/developer/stats', label: 'System Stats', icon: Activity },
     ];
 
+    const monitoringLinks = [
+        { href: '/developer/monitoring/realtime', label: 'Real-Time Dashboard', icon: Activity },
+        { href: '/developer/monitoring/active-sessions', label: 'Active Sessions', icon: Users },
+        { href: '/developer/monitoring/login-logs', label: 'Login Logs', icon: Lock },
+        { href: '/developer/monitoring/analytics', label: 'System Analytics', icon: Brain },
+        { href: '/developer/monitoring/users', label: 'User Monitoring', icon: Users },
+    ];
+
     const portalLinks = [
         { href: '/admin/dashboard', label: 'Admin Portal', icon: Shield },
         { href: '/dashboard', label: 'Student Portal', icon: Eye },
@@ -102,6 +112,23 @@ export default function DeveloperLayout({
                                     <Button
                                         variant={pathname === link.href ? 'secondary' : 'ghost'}
                                         className={`w-full justify-start gap-3 mb-1 ${pathname === link.href ? 'bg-purple-600/20 text-purple-400 hover:bg-purple-600/30' : 'text-slate-300 hover:bg-slate-700'}`}
+                                    >
+                                        <link.icon className="h-5 w-5" />
+                                        {link.label}
+                                    </Button>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="mb-6">
+                        <p className="px-2 mb-2 text-xs font-semibold text-slate-500 uppercase tracking-widest">Monitoring</p>
+                        <div className="space-y-1">
+                            {monitoringLinks.map((link) => (
+                                <Link key={link.href} href={link.href} onClick={() => setIsMobileMenuOpen(false)}>
+                                    <Button
+                                        variant={pathname === link.href ? 'secondary' : 'ghost'}
+                                        className={`w-full justify-start gap-3 mb-1 ${pathname === link.href ? 'bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600/30' : 'text-slate-300 hover:bg-slate-700'}`}
                                     >
                                         <link.icon className="h-5 w-5" />
                                         {link.label}

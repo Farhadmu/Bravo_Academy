@@ -1,9 +1,10 @@
 """
-Middleware for maintenance mode enforcement.
+Middleware for maintenance mode enforcement and system monitoring.
 """
 from django.http import JsonResponse
 from django.contrib.auth import logout
 from apps.system.models import MaintenanceMode
+from apps.system.utils import log_page_visit
 
 
 class MaintenanceModeMiddleware:
@@ -47,4 +48,32 @@ class MaintenanceModeMiddleware:
             pass
         
         response = self.get_response(request)
+        return response
+
+
+class MonitoringMiddleware:
+    """
+    Middleware to log page visits and track active sessions for the developer portal.
+    """
+    
+    def __init__(self, get_response):
+        self.get_response = get_response
+        
+    def __call__(self, request):
+        # Skip logging for static files, media, and common internal assets
+        if any(request.path.startswith(prefix) for prefix in ['/static/', '/media/', '/_next/', '/favicon.ico']):
+            return self.get_response(request)
+            
+        # Get response first so we have the full context
+        response = self.get_response(request)
+        
+        # Only log successful or not-found GET/POST requests
+        if response.status_code in [200, 201, 404] and request.method in ['GET', 'POST']:
+            try:
+                # Log the visit (will also update active session if authenticated)
+                log_page_visit(request, user=request.user if request.user.is_authenticated else None)
+            except Exception:
+                # Silently fail monitoring if something goes wrong
+                pass
+                
         return response
