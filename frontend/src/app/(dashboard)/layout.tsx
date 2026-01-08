@@ -10,7 +10,8 @@ import {
     User,
     LogOut,
     Menu,
-    X
+    X,
+    Settings
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -69,7 +70,7 @@ export default function DashboardLayout({
         { href: '/admin/dashboard', label: 'Overview', icon: LayoutDashboard },
         { href: '/admin/users', label: 'User Management', icon: User },
         { href: '/admin/tests', label: 'Test Management', icon: Brain },
-        { href: '/admin/settings', label: 'Settings', icon: Shield },
+        { href: '/admin/settings', label: 'Settings', icon: Settings },
     ];
 
     const isAdminPath = pathname.startsWith('/admin');
