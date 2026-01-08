@@ -3,12 +3,13 @@ from .models import Result, PerformanceAnalytics
 
 class ResultSerializer(serializers.ModelSerializer):
     test_name = serializers.ReadOnlyField(source='test.name')
+    test_category = serializers.ReadOnlyField(source='test.category')
     question_type = serializers.SerializerMethodField()
 
     class Meta:
         model = Result
         fields = [
-            'id', 'test', 'test_name', 'question_type', 'test_session', 
+            'id', 'test', 'test_name', 'test_category', 'question_type', 'test_session', 
             'total_questions', 'correct_answers', 'wrong_answers', 'unanswered',
             'score_percentage', 'passed', 'time_taken_seconds', 'accuracy', 'created_at'
         ]
