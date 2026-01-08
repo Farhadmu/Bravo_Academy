@@ -12,7 +12,10 @@ export default function Footer() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div>
-                        <h3 className="text-lg font-semibold mb-4">Bravo Academy</h3>
+                        <div className="flex items-center gap-3 mb-4">
+                            <img src="/images/logo.jpg" alt="Bravo Academy" className="h-8 w-8 rounded-md object-cover" />
+                            <h3 className="text-lg font-semibold">Bravo Academy</h3>
+                        </div>
                         <p className="text-gray-400 text-sm">
                             Premium preparation platform for IQ tests and comprehensive coaching.
                             Master your skills with our expert-led practice materials.

@@ -9,7 +9,6 @@ import {
     History,
     User,
     LogOut,
-    Shield,
     Menu,
     X
 } from 'lucide-react';
@@ -82,8 +81,8 @@ export default function DashboardLayout({
         <div className="min-h-screen bg-gray-100 flex flex-col md:flex-row">
             {/* Mobile Header */}
             <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b z-30 flex items-center justify-between px-4">
-                <Link href="/" className="flex items-center gap-2">
-                    <Shield className="h-6 w-6 text-blue-600" />
+                <Link href="/" className="flex items-center gap-3">
+                    <img src="/images/logo.jpg" alt="Bravo Academy" className="h-8 w-8 rounded-md object-cover" />
                     <span className="font-bold text-lg text-gray-900">Bravo Academy</span>
                 </Link>
                 <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
@@ -146,9 +145,9 @@ export default function DashboardLayout({
             {/* Desktop Sidebar */}
             <aside className="w-64 bg-white border-r hidden md:flex flex-col fixed h-full z-20">
                 <div className="h-16 flex items-center px-6 border-b">
-                    <Link href="/" className="flex items-center gap-2">
-                        <Shield className="h-8 w-8 text-blue-600" />
-                        <span className="font-bold text-lg text-gray-900">Bravo Academy</span>
+                    <Link href="/" className="flex items-center gap-3">
+                        <img src="/images/logo.jpg" alt="Bravo Academy" className="h-10 w-10 rounded-lg object-cover shadow-sm" />
+                        <span className="font-bold text-xl text-gray-900">Bravo Academy</span>
                     </Link>
                 </div>
 

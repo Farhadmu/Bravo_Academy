@@ -79,8 +79,8 @@ export default function DeveloperLayout({
         <div className="min-h-screen bg-slate-900 text-white flex flex-col md:flex-row">
             {/* Mobile Header */}
             <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-slate-800 border-b border-slate-700 z-30 flex items-center justify-between px-4">
-                <Link href="/developer" className="flex items-center gap-2">
-                    <Terminal className="h-6 w-6 text-purple-400" />
+                <Link href="/developer" className="flex items-center gap-3">
+                    <img src="/images/logo.jpg" alt="Bravo Academy" className="h-8 w-8 rounded-md object-cover ring-1 ring-purple-500/50" />
                     <span className="font-bold text-lg">Dev Portal</span>
                 </Link>
                 <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
@@ -94,8 +94,8 @@ export default function DeveloperLayout({
                 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
             `}>
                 <div className="h-16 flex items-center px-6 border-b border-slate-700">
-                    <Link href="/developer" className="flex items-center gap-2">
-                        <Terminal className="h-8 w-8 text-purple-400" />
+                    <Link href="/developer" className="flex items-center gap-3">
+                        <img src="/images/logo.jpg" alt="Bravo Academy" className="h-10 w-10 rounded-lg object-cover ring-2 ring-purple-500 shadow-lg shadow-purple-900/50" />
                         <div className="flex flex-col">
                             <span className="font-bold text-lg leading-tight uppercase tracking-wider">Dev Portal</span>
                             <span className="text-[10px] text-purple-400 font-mono tracking-tighter">GOD MODE ACTIVE</span>

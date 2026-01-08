@@ -131,23 +131,35 @@ export default function TestRunnerPage({ params }: { params: Promise<{ id: strin
         }
     }, [timeLeft, loading, isSubmitted, currentQuestionIndex, questions]);
 
-    // Sound Logic for WAT
+    // Sound Logic for WAT - High Impact "Bip Bang"
     const playBeep = () => {
         try {
             const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
+            const masterGain = audioCtx.createGain();
+            masterGain.connect(audioCtx.destination);
+            masterGain.gain.setValueAtTime(0, audioCtx.currentTime);
+            masterGain.gain.linearRampToValueAtTime(0.8, audioCtx.currentTime + 0.01); // Loud start
+            masterGain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.4);
 
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
+            // "Bip" - High frequency bite (Square wave)
+            const bip = audioCtx.createOscillator();
+            bip.type = 'square';
+            bip.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+            bip.connect(masterGain);
 
-            oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 note
-            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
+            // "Bang" - Low frequency body (Sine wave)
+            const bang = audioCtx.createOscillator();
+            bang.type = 'sine';
+            bang.frequency.setValueAtTime(110, audioCtx.currentTime); // A2
+            bang.connect(masterGain);
 
-            oscillator.start();
-            oscillator.stop(audioCtx.currentTime + 0.1);
+            bip.start();
+            bang.start();
+            bip.stop(audioCtx.currentTime + 0.1);
+            bang.stop(audioCtx.currentTime + 0.4);
+
+            // Auto-close context to save resources
+            setTimeout(() => audioCtx.close(), 1000);
         } catch (err) {
             console.error("Audio play failed:", err);
         }

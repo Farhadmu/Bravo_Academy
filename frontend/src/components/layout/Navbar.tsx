@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/auth';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Shield, User, LogOut } from 'lucide-react';
+import { Menu, X, User, LogOut } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Navbar() {
@@ -38,9 +38,9 @@ export default function Navbar() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between h-16">
                     <div className="flex items-center">
-                        <Link href="/" className="flex items-center gap-2">
-                            <Shield className="h-8 w-8 text-blue-600" />
-                            <span className="font-bold text-xl text-gray-900">Bravo Academy</span>
+                        <Link href="/" className="flex items-center gap-3">
+                            <img src="/images/logo.jpg" alt="Bravo Academy" className="h-10 w-10 rounded-lg object-cover shadow-sm" />
+                            <span className="font-bold text-xl text-gray-900 tracking-tight">Bravo Academy</span>
                         </Link>
                     </div>
 
