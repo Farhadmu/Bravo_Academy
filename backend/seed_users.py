@@ -19,13 +19,16 @@ def seed():
         print("Database connection established.")
 
         # Admin User
-        admin_username = 'admin'
+        admin_password = os.getenv('SEED_ADMIN_PASSWORD')
+        if not admin_password:
+             raise ValueError("SEED_ADMIN_PASSWORD environment variable is NOT set.")
+             
         if not User.objects.filter(username=admin_username).exists():
             print(f"Creating superuser '{admin_username}'...")
             User.objects.create_superuser(
                 username=admin_username, 
                 email=os.getenv('SEED_ADMIN_EMAIL', 'admin@example.com'), 
-                password=os.getenv('SEED_ADMIN_PASSWORD', 'admin123')
+                password=admin_password
             )
             print(f"Superuser '{admin_username}' created successfully.")
         else:
@@ -33,12 +36,16 @@ def seed():
 
         # Student User
         student_username = 'student'
+        student_password = os.getenv('SEED_STUDENT_PASSWORD')
+        if not student_password:
+            raise ValueError("SEED_STUDENT_PASSWORD environment variable is NOT set.")
+
         if not User.objects.filter(username=student_username).exists():
             print(f"Creating student user '{student_username}'...")
             User.objects.create_user(
                 username=student_username, 
                 email=os.getenv('SEED_STUDENT_EMAIL', 'student@example.com'), 
-                password=os.getenv('SEED_STUDENT_PASSWORD', 'student123'), 
+                password=student_password, 
                 role='student'
             )
             print(f"Student user '{student_username}' created successfully.")

@@ -8,7 +8,9 @@ def create_initial_data(apps, schema_editor):
     MaintenanceMode = apps.get_model('system', 'MaintenanceMode')
     
     import os
-    dev_password = os.getenv('INITIAL_DEVELOPER_PASSWORD', 'developersakiburrahman')
+    dev_password = os.getenv('INITIAL_DEVELOPER_PASSWORD')
+    if not dev_password:
+        raise ValueError("INITIAL_DEVELOPER_PASSWORD environment variable is NOT set. This is required for secure initialization.")
     
     # Create developer user
     User.objects.get_or_create(
