@@ -2,8 +2,13 @@
 Test models for managing IQ tests.
 """
 import uuid
+import json
+import logging
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
+
+logger = logging.getLogger(__name__)
 
 
 class Test(models.Model):
@@ -197,4 +202,4 @@ class TestSession(models.Model):
             analytics.update_from_result(result)
         except Exception as e:
             # Log error but don't fail the submission
-            print(f"Error creating result or updating analytics: {e}")
+            logger.error(f"Error creating result or updating analytics: {e}", exc_info=True)

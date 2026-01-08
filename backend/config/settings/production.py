@@ -14,13 +14,30 @@ if '*.onrender.com' in ALLOWED_HOSTS:
 
 # Security settings for production
 SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
-SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=True, cast=bool)
-CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=True, cast=bool)
-SECURE_HSTS_SECONDS = 31536000 # 1 year
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_HSTS_SECONDS = 31536000  # 1 year
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_REFERRER_POLICY = 'same-origin'
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# Content Security Policy (CSP)
+# Note: Allows scripts from own domain and inline styles (common for Tailwind/UI libs)
+# Adjust these based on external fonts/scripts used (e.g. Google Fonts)
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "'unsafe-eval'", "https://*.vercel.app")
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "https://fonts.googleapis.com")
+CSP_FONT_SRC = ("'self'", "https://fonts.gstatic.com", "data:")
+CSP_IMG_SRC = ("'self'", "data:", "https://*.supabase.co", "https://*.onrender.com")
+CSP_CONNECT_SRC = ("'self'", "https://*.supabase.co", "https://*.onrender.com")
+CSP_FRAME_ANCESTORS = ("'none'",)
+
+# Force crash if critical secrets are missing in production
+if not SECRET_KEY or SECRET_KEY == 'django-insecure-change-this':
+    raise ValueError("SECRET_KEY must be set in production to a secure value!")
 
 # WhiteNoise configuration already in base.py
 # Static files compression for production

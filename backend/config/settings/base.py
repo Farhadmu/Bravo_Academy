@@ -161,7 +161,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'apps.users.authentication.CookieJWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
@@ -182,7 +182,17 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.FormParser',
         'rest_framework.parsers.MultiPartParser',
     ),
-    'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
+    'EXCEPTION_HANDLER': 'utils.exceptions.custom_exception_handler',
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/day',
+        'user': '1000/day',
+        'login': '10/minute',   # Specific throttle for login attempts
+        'register': '5/hour',   # Specific throttle for registration
+    }
 }
 
 # JWT Settings
@@ -201,6 +211,14 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'user_id',
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
     'TOKEN_TYPE_CLAIM': 'token_type',
+    
+    # Cookie Settings
+    'AUTH_COOKIE': 'accessToken',      # Cookie name
+    'AUTH_COOKIE_REFRESH': 'refreshToken', # Refresh cookie name
+    'AUTH_COOKIE_SECURE': config('SESSION_COOKIE_SECURE', default=False, cast=bool), # True in prod
+    'AUTH_COOKIE_HTTP_ONLY': True,      # Prevent client-side JS from reading the cookie
+    'AUTH_COOKIE_PATH': '/',           # Cookie path
+    'AUTH_COOKIE_SAMESITE': 'Lax',     # SameSite attribute for cookie
 }
 
 # CORS settings
@@ -232,6 +250,9 @@ SPECTACULAR_SETTINGS = {
 SECURE_BROWSER_XSS_FILTER = True
 X_FRAME_OPTIONS = 'DENY'
 SECURE_CONTENT_TYPE_NOSNIFF = True
+CSRF_COOKIE_HTTPONLY = False  # Must be False for JS to read it for headers
+CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=False, cast=bool)
+SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=False, cast=bool)
 
 # Application-specific settings
 SITE_URL = config('SITE_URL', default='http://localhost:8000')

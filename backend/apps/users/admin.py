@@ -37,3 +37,25 @@ class UserAdmin(BaseUserAdmin):
     )
     
     readonly_fields = ('created_at', 'updated_at', 'last_login')
+
+    def get_readonly_fields(self, request, obj=None):
+        """Restrict editing sensitive fields for non-superusers."""
+        readonly = list(super().get_readonly_fields(request, obj))
+        
+        if not request.user.is_superuser:
+            # Non-superusers cannot change their own or others' roles/staff status
+            # to prevent self-promotion or unauthorized promotion.
+            readonly.extend(['is_staff', 'is_superuser', 'role'])
+            
+        return readonly
+
+    def save_model(self, request, obj, form, change):
+        """Additional safety check on save."""
+        if not request.user.is_superuser:
+            # Force integrity for non-superusers attempting to bypass via form manipulation
+            if change:
+                old_obj = self.model.objects.get(pk=obj.pk)
+                obj.is_staff = old_obj.is_staff
+                obj.is_superuser = old_obj.is_superuser
+                obj.role = old_obj.role
+        super().save_model(request, obj, form, change)

@@ -13,7 +13,7 @@ interface AuthState {
     user: User | null;
     accessToken: string | null;
     isAuthenticated: boolean;
-    login: (user: User, accessToken: string, refreshToken: string) => void;
+    login: (user: User, accessToken: string) => void;
     logout: () => void;
     updateUser: (user: Partial<User>) => void;
 }
@@ -24,23 +24,18 @@ export const useAuthStore = create<AuthState>()(
             user: null,
             accessToken: null,
             isAuthenticated: false,
-            login: (user, accessToken, refreshToken) => {
+            login: (user, accessToken) => {
                 localStorage.setItem('accessToken', accessToken);
-                localStorage.setItem('refreshToken', refreshToken);
                 set({ user, accessToken, isAuthenticated: true });
             },
             logout: async () => {
                 try {
-                    const refreshToken = localStorage.getItem('refreshToken');
-                    if (refreshToken) {
-                        const api = (await import('@/lib/api')).default;
-                        await api.post('/auth/logout/', { refresh_token: refreshToken });
-                    }
+                    const api = (await import('@/lib/api')).default;
+                    await api.post('/auth/logout/');
                 } catch (error) {
                     console.error('Logout API call failed:', error);
                 } finally {
                     localStorage.removeItem('accessToken');
-                    localStorage.removeItem('refreshToken');
                     set({ user: null, accessToken: null, isAuthenticated: false });
                 }
             },

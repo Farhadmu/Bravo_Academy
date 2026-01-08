@@ -4,14 +4,30 @@ import { useWakeupStore } from '@/components/common/BackendWakeupManager';
 // Create generic axios instance
 const api: AxiosInstance = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api',
+    withCredentials: true, // Crucial for sending/receiving HttpOnly cookies
     headers: {
         'Content-Type': 'application/json',
     },
 });
 
-// Request interceptor to add auth token
+// Helper to get CSRF token from cookies
+const getCookie = (name: string): string | null => {
+    if (typeof document === 'undefined') return null;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+    return null;
+};
+
+// Request interceptor to add CSRF token and handle wakeup
 api.interceptors.request.use(
     (config) => {
+        // Handle CSRF token
+        const csrfToken = getCookie('csrftoken');
+        if (csrfToken && config.headers) {
+            config.headers['X-CSRFToken'] = csrfToken;
+        }
+
         // Handle cold start detection
         const isClient = typeof window !== 'undefined';
         if (isClient) {
@@ -27,10 +43,13 @@ api.interceptors.request.use(
             (config as any)._wakeupTimerId = timerId;
         }
 
+        // Authorization header is now handled automatically by HttpOnly cookies
+        // But we keep this for backwards compatibility or mobile clients if needed
         const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-        if (token) {
+        if (token && !config.headers.Authorization) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+
         return config;
     },
     (error) => Promise.reject(error)
@@ -93,17 +112,22 @@ api.interceptors.response.use(
                 }
 
                 // Try to refresh token
-                const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/auth/refresh/`, {
-                    refresh: refreshToken,
+                // We don't necessarily need to send 'refresh' in body anymore as it is in cookies,
+                // but the backend view CookieTokenRefreshView handles both for compatibility.
+                const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/auth/refresh/`, {}, {
+                    withCredentials: true
                 });
 
-                const { access, refresh } = response.data;
-                localStorage.setItem('accessToken', access);
-                if (refresh) {
-                    localStorage.setItem('refreshToken', refresh);
+                const { access } = response.data;
+                // We still update local storage/state for immediate UI responsiveness 
+                // until we fully migrate the auth store to be cookie-aware.
+                if (access) {
+                    localStorage.setItem('accessToken', access);
                 }
 
                 if (originalRequest.headers) {
+                    // Inject the new access token into the retried request
+                    // even though it's also in the cookie now
                     originalRequest.headers.Authorization = `Bearer ${access}`;
                 }
 

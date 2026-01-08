@@ -5,6 +5,9 @@ from django.http import JsonResponse
 from django.contrib.auth import logout
 from apps.system.models import MaintenanceMode
 from apps.system.utils import log_page_visit
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class MaintenanceModeMiddleware:
@@ -43,9 +46,9 @@ class MaintenanceModeMiddleware:
                     'detail': 'You have been logged out because the system is under maintenance for your role.',
                     'logout': True  # Signal to frontend to clear auth state
                 }, status=401)  # Use 401 to trigger frontend logout handling
-        except Exception:
+        except Exception as e:
+            logger.error(f"Error checking maintenance mode: {e}", exc_info=True)
             # If anything goes wrong with maintenance check, allow request through
-            pass
         
         response = self.get_response(request)
         return response
@@ -72,8 +75,8 @@ class MonitoringMiddleware:
             try:
                 # Log the visit (will also update active session if authenticated)
                 log_page_visit(request, user=request.user if request.user.is_authenticated else None)
-            except Exception:
+            except Exception as e:
+                logger.error(f"Error logging page visit: {e}", exc_info=True)
                 # Silently fail monitoring if something goes wrong
-                pass
                 
         return response

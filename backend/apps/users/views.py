@@ -9,6 +9,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+from django.conf import settings
 from django.db.models import Sum, Count
 from django.db.models.functions import TruncDate
 from datetime import timedelta
@@ -18,11 +19,14 @@ from .serializers import (
     ChangePasswordSerializer,
     UserCreateSerializer
 )
+from .throttling import LoginRateThrottle
 from utils.device_tracking import get_client_ip
 from apps.tests.models import Test
 from apps.payments.models import Payment, UserTestAccess
 
 User = get_user_model()
+import logging
+logger = logging.getLogger(__name__)
 
 
 from apps.system.utils import log_login_attempt
@@ -34,6 +38,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     Checks if user can login from the device and updates device info.
     """
     serializer_class = CustomTokenObtainPairSerializer
+    throttle_classes = [LoginRateThrottle]
     
     def post(self, request, *args, **kwargs):
         username = request.data.get('username')
@@ -68,6 +73,30 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             raise e
 
         if response.status_code == 200:
+            # Set cookies
+            access_token = response.data.get('access')
+            refresh_token = response.data.get('refresh')
+            
+            if access_token:
+                response.set_cookie(
+                    key=settings.SIMPLE_JWT['AUTH_COOKIE'],
+                    value=access_token,
+                    expires=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'],
+                    secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                    httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                    samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+                )
+            
+            if refresh_token:
+                response.set_cookie(
+                    key=settings.SIMPLE_JWT['AUTH_COOKIE_REFRESH'],
+                    value=refresh_token,
+                    expires=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'],
+                    secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                    httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                    samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+                )
+            
             # Login successful, now check device fingerprint and maintenance mode
             device_fingerprint = request.data.get('device_fingerprint', '')
             
@@ -85,11 +114,15 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                         status='failed', 
                         failure_reason='Maintenance Mode'
                     )
-                    return Response({
+                    # Clear cookies if role is blocked
+                    response = Response({
                         'error': 'Maintenance Mode',
                         'message': maintenance.message,
                         'detail': 'The system is currently under maintenance for your role.'
                     }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+                    response.delete_cookie(settings.SIMPLE_JWT['AUTH_COOKIE'])
+                    response.delete_cookie(settings.SIMPLE_JWT['AUTH_COOKIE_REFRESH'])
+                    return response
 
                 # Check if user can login from this device
                 if not user.can_login_from_device(device_fingerprint):
@@ -100,9 +133,13 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                         status='failed', 
                         failure_reason='Multi-device login blocked'
                     )
-                    return Response({
+                    # Clear cookies if multi-device login blocked
+                    response = Response({
                         'error': 'This ID is already logged in on another device. You cannot login using a different device with the same ID.'
                     }, status=status.HTTP_403_FORBIDDEN)
+                    response.delete_cookie(settings.SIMPLE_JWT['AUTH_COOKIE'])
+                    response.delete_cookie(settings.SIMPLE_JWT['AUTH_COOKIE_REFRESH'])
+                    return response
                 
                 # Update device info
                 ip_address = get_client_ip(request)
@@ -115,8 +152,51 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                 # Should not happen as super().post() was successful
                 pass
             except Exception as e:
-                print(f"Error updating device info: {e}")
+                logger.error(f"Error updating device info: {e}", exc_info=True)
         
+        return response
+
+
+class CookieTokenRefreshView(TokenRefreshView):
+    """
+    Custom TokenRefreshView that reads refresh token from cookie and sets new cookies.
+    """
+    def post(self, request, *args, **kwargs):
+        refresh_token = request.COOKIES.get(settings.SIMPLE_JWT['AUTH_COOKIE_REFRESH'])
+        
+        if refresh_token:
+            # Add to request data if it was in cookies
+            # Note: copy() is needed as request.data is immutable
+            data = request.data.copy()
+            data['refresh'] = refresh_token
+            request._full_data = data
+            
+        response = super().post(request, *args, **kwargs)
+        
+        if response.status_code == 200:
+            access_token = response.data.get('access')
+            refresh_token = response.data.get('refresh')
+            
+            if access_token:
+                response.set_cookie(
+                    key=settings.SIMPLE_JWT['AUTH_COOKIE'],
+                    value=access_token,
+                    expires=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'],
+                    secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                    httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                    samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+                )
+            
+            if refresh_token:
+                response.set_cookie(
+                    key=settings.SIMPLE_JWT['AUTH_COOKIE_REFRESH'],
+                    value=refresh_token,
+                    expires=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'],
+                    secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                    httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                    samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+                )
+                
         return response
 
 
@@ -129,16 +209,21 @@ class LogoutView(viewsets.ViewSet):
     def logout(self, request):
         """Logout user and blacklist refresh token."""
         try:
-            refresh_token = request.data.get('refresh_token')
-            token = RefreshToken(refresh_token)
-            token.blacklist()
+            refresh_token = request.data.get('refresh_token') or request.COOKIES.get(settings.SIMPLE_JWT['AUTH_COOKIE_REFRESH'])
+            
+            if refresh_token:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
             
             # Clear device fingerprint on logout
             user = request.user
             user.device_fingerprint = None
             user.save(update_fields=['device_fingerprint'])
             
-            return Response({'detail': 'Successfully logged out.'}, status=status.HTTP_200_OK)
+            response = Response({'detail': 'Successfully logged out.'}, status=status.HTTP_200_OK)
+            response.delete_cookie(settings.SIMPLE_JWT['AUTH_COOKIE'])
+            response.delete_cookie(settings.SIMPLE_JWT['AUTH_COOKIE_REFRESH'])
+            return response
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
