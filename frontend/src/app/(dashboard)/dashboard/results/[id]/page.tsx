@@ -20,6 +20,7 @@ interface ReviewItem {
 interface ResultDetail {
     id: string;
     test_name: string;
+    test_category?: 'verbal' | 'non-verbal' | 'wat';
     question_type?: 'wat' | 'mcq' | 'true_false';
     score_percentage: string;
     passed: boolean;
@@ -70,7 +71,10 @@ export default function ResultDetailPage({ params }: { params: Promise<{ id: str
 
 
     // WAT and Verbal View (Non-graded)
-    if (result.question_type === 'wat' || result.test_name.toLowerCase().includes('verbal')) {
+    // Use test_category to properly distinguish between test types
+    const isNonGraded = result.question_type === 'wat' || result.test_category === 'verbal';
+
+    if (isNonGraded) {
         const title = result.question_type === 'wat' ? 'WAT Completed' : 'Verbal Test Completed';
         const words = result.review_data?.map(item => item.question_text) || [];
 
