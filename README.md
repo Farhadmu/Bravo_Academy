@@ -10,7 +10,7 @@
 
 **A high-performance, enterprise-grade adaptive testing & education platform designed for defense recruitment preparation.**
 
-[Request Access](mailto:tahmid.rahman.7210@gmail.com) • [Documentation](docs/PROJECT_AUDIT_REPORT.md) • [Report Bug](SECURITY.md)
+[Request Access](mailto:contact@bravoacademy.app) • [Documentation](docs/PROJECT_AUDIT_REPORT.md) • [Report Bug](SECURITY.md)
 
 </div>
 
