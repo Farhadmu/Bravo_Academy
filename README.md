@@ -1,347 +1,141 @@
-# Bravo Academy - ISSB Preparation Platform
+# Bravo Academy Platform
 
-Professional IQ Test Platform for Bangladesh Armed Forces ISSB Exam Preparation
+<div align="center">
 
-## Overview
+![Version](https://img.shields.io/badge/version-2.1.0-blue.svg?style=for-the-badge)
+![Status](https://img.shields.io/badge/status-production-success.svg?style=for-the-badge)
+![Security](https://img.shields.io/badge/security-hardened-green.svg?style=for-the-badge)
+![Stack](https://img.shields.io/badge/stack-Next.js%20%7C%20Django-black.svg?style=for-the-badge)
 
-Bravo Academy is a production-grade online education platform designed for Bangladesh Bravo Academy to prepare candidates for the Inter Services Selection Board (ISSB) examinations of the Bangladesh Armed Forces (Army, Navy, Air Force). The platform provides comprehensive, timed testing environments that simulate real ISSB examination conditions.
+**A high-performance, enterprise-grade adaptive testing & education platform designed for defense recruitment preparation.**
 
-### Platform Features
+[Request Access](mailto:admin@example.com) • [Documentation](#) • [Report Bug](#)
 
-- **15 Test Sets**: 10 Standard IQ Tests + 5 Word Association Tests
-- **1000+ Questions**: Professionally curated MCQ and True/False questions
-- **Real-time Analytics**: Comprehensive performance tracking
-- **Secure Authentication**: Device-locked accounts with JWT tokens
-- **Payment Management**: Integrated verification system
-
-## Architecture
-
-### System Design
-
-The platform follows a modern client-server architecture:
-
-- **Frontend**: Next.js 16 with TypeScript, React 19, and Tailwind CSS
-- **Backend**: Django 5.x REST API with Django REST Framework
-- **Database**: PostgreSQL (managed)
-- **Authentication**: JWT-based with refresh tokens
-- **Storage**: Supabase Storage for media files
-
-### Technology Stack
-
-#### Backend
-
-- **Framework**: Django 5.x
-- **API**: Django REST Framework
-- **Database**: PostgreSQL
-- **Authentication**: Simple JWT
-- **Password Hashing**: Argon2
-- **Server**: Gunicorn
-- **Static Files**: WhiteNoise
-
-#### Frontend
-
-- **Framework**: Next.js 16 (App Router)
-- **Language**: TypeScript 5.x
-- **UI Library**: React 19
-- **Styling**: Tailwind CSS 3.4
-- **Components**: Radix UI
-- **State Management**: Zustand 5.0
-- **Forms**: React Hook Form with Zod
-- **HTTP Client**: Axios
-- **Charts**: Recharts
-
-#### Infrastructure
-
-- **Backend Hosting**: Render
-- **Frontend Hosting**: Vercel
-- **Database**: Supabase (Managed PostgreSQL)
-- **Media Storage**: Supabase Storage
-
-## Getting Started
-
-### Prerequisites
-
-- Python 3.11 or higher
-- Node.js 18 or higher
-- PostgreSQL 14 or higher
-- Git
-
-### Backend Setup
-
-```bash
-# Navigate to backend directory
-cd backend
-
-# Create and activate virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements/development.txt
-
-# Configure environment variables
-cp .env.example .env
-# Edit .env with your configuration
-
-# Run migrations
-python manage.py migrate
-
-# Create superuser
-python manage.py createsuperuser
-
-# Run development server
-python manage.py runserver
-```
-
-The backend will be available at `http://localhost:8000`
-
-### Frontend Setup
-
-```bash
-# Navigate to frontend directory
-cd frontend
-
-# Install dependencies
-npm install
-
-# Configure environment
-cp .env.example .env.local
-# Edit .env.local with your API URL
-
-# Run development server
-npm run dev
-```
-
-The frontend will be available at `http://localhost:3000`
-
-## Project Structure
-
-```
-online-edu/
-├── backend/
-│   ├── apps/
-│   │   ├── users/          # Authentication & user management
-│   │   ├── tests/          # Test & session management
-│   │   ├── questions/      # Question management
-│   │   ├── results/        # Results & analytics
-│   │   └── payments/       # Payment verification
-│   ├── config/
-│   │   └── settings/       # Environment-specific settings
-│   ├── scripts/            # Data seeding scripts
-│   └── utils/              # Utility modules
-├── frontend/
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── (public)/   # Public pages
-│   │   │   ├── (auth)/     # Authentication pages
-│   │   │   └── (dashboard)/ # Protected pages
-│   │   ├── components/     # React components
-│   │   └── lib/            # Utilities
-│   └── public/             # Static assets
-└── README.md
-```
-
-## Security Features
-
-### Device Fingerprinting
-
-The platform implements device-based authentication to prevent account sharing:
-
-- Each student account is restricted to a single device
-- Admin accounts can access from multiple devices
-- Device fingerprints are validated on every login
-- Hardware-based identification using FingerprintJS
-
-### Authentication
-
-- JWT-based authentication with access and refresh tokens
-- Argon2 password hashing (OWASP recommended)
-- Automatic token refresh on expiration
-- CORS protection with whitelist
-
-### Data Protection
-
-- All sensitive data encrypted in transit (HTTPS)
-- Password complexity requirements enforced
-- IP address tracking for security auditing
-- No plain text credential storage
-
-## Core Features
-
-### Testing Engine
-
-- Timed ISSB simulations (100 questions in 30 minutes)
-- Multiple question types: MCQ, True/False, Word Association Tests
-- Server-side timer with robust timezone handling
-- Auto-save functionality to prevent data loss
-- Image support for visual questions
-
-### Analytics System
-
-- Comprehensive performance metrics
-- Score progression tracking
-- Accuracy calculations
-- Time-based analytics
-- Difficulty-based breakdowns
-
-### Admin Portal
-
-- User management
-- Payment verification
-- Test management
-- System statistics
-- Content management
-
-## API Documentation
-
-### Base URL
-
-- Development: `http://localhost:8000/api`
-- Production: Configure via environment variable
-
-### Authentication Endpoints
-
-#### Register
-```
-POST /users/register/
-Content-Type: application/json
-```
-
-#### Login
-```
-POST /users/login/
-Content-Type: application/json
-X-Device-Fingerprint: <fingerprint>
-```
-
-#### Token Refresh
-```
-POST /users/token/refresh/
-Content-Type: application/json
-```
-
-### Test Endpoints
-
-#### List Tests
-```
-GET /tests/tests/
-Authorization: Bearer <token>
-```
-
-#### Start Test
-```
-POST /tests/tests/{id}/start_test/
-Authorization: Bearer <token>
-```
-
-#### Submit Test
-```
-POST /tests/test-sessions/{id}/submit/
-Authorization: Bearer <token>
-```
-
-## Environment Variables
-
-### Backend
-
-Required environment variables for backend configuration:
-
-```
-DATABASE_URL=postgresql://user:password@host:port/database
-SECRET_KEY=your-secret-key
-CORS_ALLOWED_ORIGINS=https://yourdomain.com
-ALLOWED_HOSTS=yourdomain.com
-SUPABASE_URL=your-supabase-url
-SUPABASE_KEY=your-supabase-key
-```
-
-### Frontend
-
-Required environment variables for frontend configuration:
-
-```
-NEXT_PUBLIC_API_URL=https://your-backend-url/api
-```
-
-## Deployment
-
-### Backend Deployment
-
-The backend is deployed using Render with the provided `render.yaml` configuration.
-
-### Frontend Deployment
-
-The frontend is deployed using Vercel with automatic deployment from the main branch.
-
-### Database
-
-PostgreSQL database is managed via Supabase with connection pooling enabled.
-
-## Testing
-
-### Backend Tests
-```bash
-cd backend
-python manage.py test
-```
-
-### Frontend Tests
-```bash
-cd frontend
-npm run test
-```
-
-## Development Guidelines
-
-### Code Style
-
-**Python**
-- Follow PEP 8 guidelines
-- Use type hints where applicable
-- Document all public methods
-- Use Django conventions
-
-**TypeScript**
-- Follow ESLint configuration
-- Use Prettier for formatting
-- Type all components and functions
-- Use functional components with hooks
-
-### Git Workflow
-
-```bash
-# Create feature branch
-git checkout -b feature/description
-
-# Make changes and commit
-git add .
-git commit -m "type: description"
-
-# Push to remote
-git push origin feature/description
-```
-
-## Contributing
-
-This is a proprietary project. For internal team members:
-
-1. Create a feature branch
-2. Make changes with appropriate tests
-3. Submit pull request for review
-4. Wait for approval from project lead
-
-## License
-
-**Proprietary and Confidential**
-
-This project and all associated code are the exclusive property of Bangladesh Bravo Academy. All rights reserved.
-
-Unauthorized copying, distribution, modification, or use of this software is strictly prohibited.
-
-## Support
-
-For technical support, please contact the system administrator through official channels.
+</div>
 
 ---
 
-Built for Bangladesh Bravo Academy
+## 📋 Executive Summary
+
+**Bravo Academy** is a proprietary, full-stack ed-tech solution engineered to simulate high-stakes testing environments (ISSB). Built on a decoupled microservices-ready architecture, it leverages **Next.js 16** for a reactive edge-optimized frontend and **Django 5** for a robust, secure API layer.
+
+The platform distinguishes itself through strict security compliance (HttpOnly JWTs, RBAC, CSP), real-time performance analytics, and a scalable asset management system handling 1,500+ high-fidelity testing assets.
+
+---
+
+## 🏗️ Technical Architecture
+
+The system follows a modern **Headless Architecture**, strictly separating the presentation layer from business logic to ensure scalability and independent deployment cycles.
+
+### 🌟 Core Stack
+| Component | Technology | Key Features |
+| :--- | :--- | :--- |
+| **Frontend** | **Next.js 16 (React 19)** | App Router, Server Actions, Tailwind CSS, Radix UI, Zustand |
+| **Backend** | **Django 5.1 (DRF)** | ViewSets, Serializers, Signals, Gunicorn, WhiteNoise |
+| **Database** | **PostgreSQL (Supabase)** | Row Level Security (RLS), Connection Pooling, JSONB Support |
+| **Auth** | **JWT (Cookie-Based)** | SimpleJWT, HttpOnly, SameSite=Lax, Argon2 Hashing |
+| **Storage** | **S3 Compatible** | Direct-to-cloud media delivery, Secure Presigned URLs |
+
+### 🔒 Security & Compliance
+- **Strict Content Security Policy (CSP)**: Mitigates XSS by verifying all script sources.
+- **Role-Based Access Control (RBAC)**: Granular permissions for Student, Admin, and Developer roles.
+- **Device Fingerprinting**: Hardware-locked sessions to prevent account sharing.
+- **Throttling & Rate Limiting**: Distributed protection against brute-force attacks across all Auth/API endpoints.
+
+---
+
+## ⚡ Key Features
+
+### 🎓 Adaptive Testing Engine
+- **Multi-Format Support**: Handles MCQ, True/False, and time-critical Word Association Tests (WAT).
+- **Latency-Aware Timer**: Server-authoritative timing logic to prevent client-side manipulation.
+- **Resilient Sessions**: Auto-resume capability for interrupted tests with precise state restoration.
+
+### 📊 Advanced Analytics
+- **Performance/Time Correlation**: Detailed scatter plots analyzing time-taken vs. accuracy.
+- **Category Benchmarking**: Automatic grading against historical cohort data (Verbal/Non-Verbal/Abstract).
+- **History Tracking**: Long-term longitudinal data visualization using `Recharts`.
+
+### 🛡️ Administrative Command Center
+- **User Lifecycle Management**: Full CRUD capabilities for user access and ban management.
+- **Content CMS**: Dynamic question bank management with bulk-upload and S3 asset linking.
+- **Payment Verification**: Manual and automated workflow for premium test access verification.
+
+---
+
+## 📂 Repository Structure
+
+```graphql
+online-edu/
+├── backend/                  # Django REST API
+│   ├── apps/
+│   │   ├── users/            # Auth, Profiles, Device Fingerprinting
+│   │   ├── tests/            # Test Engine & Session Logic
+│   │   ├── questions/        # Question Bank & S3 Media
+│   │   ├── results/          # Analytics & Scoring Algorithms
+│   │   └── system/           # Health Checks & Monitoring
+│   ├── config/               # Settings (Base, Dev, Prod)
+│   └── scripts/              # Data Seeding & Maintenance automation
+├── frontend/                 # Next.js 16 Application
+│   ├── src/
+│   │   ├── app/              # App Router Pages ((dashboard), (auth))
+│   │   ├── components/       # Shadcn/Radix UI Library
+│   │   └── lib/              # API Clients & Utilities
+├── docker/                   # Containerization Configs
+└── docs/                     # Architecture & Security Documentation
+```
+
+---
+
+## 🚀 Deployment Strategy
+
+The infrastructure is designed for high availability and zero-downtime updates.
+
+- **Frontend (Edge)**: Deployed on **Vercel**, leveraging Edge Network for sub-millisecond static asset delivery.
+- **Backend (Compute)**: Deployed on **Render**, utilizing auto-scaling workers for API request handling.
+- **Data Persistence**: Managed **Supabase** instance with automated daily backups and point-in-time recovery.
+
+---
+
+## 🛠️ Local Development Setup
+
+### Prerequisites
+- Python 3.12+
+- Node.js 20+
+- PostgreSQL 15+
+
+### 1. Backend Initialization
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements/development.txt
+cp .env.example .env
+python manage.py migrate
+python manage.py runserver
+```
+
+### 2. Frontend Initialization
+```bash
+cd frontend
+npm install
+cp .env.example .env.local
+npm run dev
+```
+
+---
+
+## 🤝 Contribution Guidelines
+
+This project adheres to **Enterprise Engineering Standards**.
+1. **Trunk-Based Development**: Short-lived feature branches targeting `main`.
+2. **Commit Convention**: All commits must follow [Conventional Commits](https://www.conventionalcommits.org/).
+3. **Code Quality**: Pre-commit hooks enforce `Black` (Python) and `ESLint/Prettier` (TS) standards.
+
+---
+
+<div align="center">
+
+**Proprietary Software** • Built for **Bravo Academy** • All Rights Reserved
+
+</div>
