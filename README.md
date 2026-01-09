@@ -10,7 +10,7 @@
 
 **A high-performance, enterprise-grade adaptive testing & education platform designed for defense recruitment preparation.**
 
-[Request Access](mailto:sakiburrahmannnn@gmail.com) • [Documentation](docs/PROJECT_AUDIT_REPORT.md) • [Report Bug](SECURITY.md)
+[Request Access](mailto:sakiburrahmannnn@gmail.com) (sakiburrahmannnn@gmail.com) • [Documentation](docs/PROJECT_AUDIT_REPORT.md) • [Report Bug](SECURITY.md)
 
 </div>
 

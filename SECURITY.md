@@ -4,15 +4,20 @@
 
 | Version | Supported |
 | ------- | --------- |
-| 2.x     | Yes       |
-| 1.x     | No        |
+| 2.1.0   | Yes       |
+| < 2.0   | No        |
 
 ## Reporting a Vulnerability
 
-We take the security of this project seriously. If you discover a security vulnerability, we appreciate your help in disclosing it to us in a responsible manner.
+We take the security of **Bravo Academy** seriously. If you discover a security vulnerability in our testing platform, authentication flow, or API, please report it immediately.
 
-Please email the `admin@example.com` with a detailed description of the issue, the steps to reproduce it, and any other relevant information.
+**Contact:** [sakiburrahmannnn@gmail.com](mailto:sakiburrahmannnn@gmail.com)
+
+Please include:
+1. Description of the vulnerability.
+2. Steps to reproduce.
+3. Potential impact.
 
 **Do not create public GitHub issues for security vulnerabilities.**
 
-We will make every effort to acknowledge your report within 48 hours and provide an estimated timeframe for a fix.
+We will acknowledge your report within 48 hours.
