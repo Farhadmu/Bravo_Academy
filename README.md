@@ -7,9 +7,10 @@
 ![Security](https://img.shields.io/badge/security-hardened-green.svg?style=for-the-badge)
 ![Stack](https://img.shields.io/badge/stack-Next.js%20%7C%20Django-black.svg?style=for-the-badge)
 
+
 **A high-performance, enterprise-grade adaptive testing & education platform designed for defense recruitment preparation.**
 
-[Request Access](mailto:admin@example.com) • [Documentation](#) • [Report Bug](#)
+[Request Access](mailto:tahmid.rahman.7210@gmail.com) • [Documentation](docs/PROJECT_AUDIT_REPORT.md) • [Report Bug](SECURITY.md)
 
 </div>
 
