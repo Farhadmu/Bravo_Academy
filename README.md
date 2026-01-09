@@ -15,7 +15,7 @@
 
 ---
 
-## 📋 Executive Summary
+## Executive Summary
 
 **Bravo Academy** is a proprietary, full-stack ed-tech solution engineered to simulate high-stakes testing environments (ISSB). Built on a decoupled microservices-ready architecture, it leverages **Next.js 16** for a reactive edge-optimized frontend and **Django 5** for a robust, secure API layer.
 
@@ -23,11 +23,11 @@ The platform distinguishes itself through strict security compliance (HttpOnly J
 
 ---
 
-## 🏗️ Technical Architecture
+## Technical Architecture
 
 The system follows a modern **Headless Architecture**, strictly separating the presentation layer from business logic to ensure scalability and independent deployment cycles.
 
-### 🌟 Core Stack
+### Core Stack
 | Component | Technology | Key Features |
 | :--- | :--- | :--- |
 | **Frontend** | **Next.js 16 (React 19)** | App Router, Server Actions, Tailwind CSS, Radix UI, Zustand |
@@ -36,7 +36,7 @@ The system follows a modern **Headless Architecture**, strictly separating the p
 | **Auth** | **JWT (Cookie-Based)** | SimpleJWT, HttpOnly, SameSite=Lax, Argon2 Hashing |
 | **Storage** | **S3 Compatible** | Direct-to-cloud media delivery, Secure Presigned URLs |
 
-### 🔒 Security & Compliance
+### Security & Compliance
 - **Strict Content Security Policy (CSP)**: Mitigates XSS by verifying all script sources.
 - **Role-Based Access Control (RBAC)**: Granular permissions for Student, Admin, and Developer roles.
 - **Device Fingerprinting**: Hardware-locked sessions to prevent account sharing.
@@ -44,26 +44,26 @@ The system follows a modern **Headless Architecture**, strictly separating the p
 
 ---
 
-## ⚡ Key Features
+## Key Features
 
-### 🎓 Adaptive Testing Engine
+### Adaptive Testing Engine
 - **Multi-Format Support**: Handles MCQ, True/False, and time-critical Word Association Tests (WAT).
 - **Latency-Aware Timer**: Server-authoritative timing logic to prevent client-side manipulation.
 - **Resilient Sessions**: Auto-resume capability for interrupted tests with precise state restoration.
 
-### 📊 Advanced Analytics
+### Advanced Analytics
 - **Performance/Time Correlation**: Detailed scatter plots analyzing time-taken vs. accuracy.
 - **Category Benchmarking**: Automatic grading against historical cohort data (Verbal/Non-Verbal/Abstract).
 - **History Tracking**: Long-term longitudinal data visualization using `Recharts`.
 
-### 🛡️ Administrative Command Center
+### Administrative Command Center
 - **User Lifecycle Management**: Full CRUD capabilities for user access and ban management.
 - **Content CMS**: Dynamic question bank management with bulk-upload and S3 asset linking.
 - **Payment Verification**: Manual and automated workflow for premium test access verification.
 
 ---
 
-## 📂 Repository Structure
+## Repository Structure
 
 ```graphql
 online-edu/
@@ -87,7 +87,7 @@ online-edu/
 
 ---
 
-## 🚀 Deployment Strategy
+## Deployment Strategy
 
 The infrastructure is designed for high availability and zero-downtime updates.
 
@@ -97,7 +97,7 @@ The infrastructure is designed for high availability and zero-downtime updates.
 
 ---
 
-## 🛠️ Local Development Setup
+## Local Development Setup
 
 ### Prerequisites
 - Python 3.12+
@@ -125,7 +125,7 @@ npm run dev
 
 ---
 
-## 🤝 Contribution Guidelines
+## Contribution Guidelines
 
 This project adheres to **Enterprise Engineering Standards**.
 1. **Trunk-Based Development**: Short-lived feature branches targeting `main`.
