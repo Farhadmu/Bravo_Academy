@@ -106,10 +106,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         """Check if user is student."""
         return self.role == 'student'
     
-    @property
-    def is_developer(self):
-        """Check if user is developer."""
-        return self.role == 'developer' or self.is_superuser
+    # Developer Access Control
+    is_developer = models.BooleanField(
+        default=False, 
+        help_text="Designates whether the user can access to Developer Portal."
+    )
     
     def update_device_info(self, fingerprint, ip_address):
         """Update user's device fingerprint and IP."""

@@ -17,9 +17,11 @@ class UserAdmin(BaseUserAdmin):
     
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        if request.user.is_superuser or (hasattr(request.user, 'role') and request.user.role == 'developer'):
+        # Only superusers and developers can see developer accounts
+        if request.user.is_superuser or (hasattr(request.user, 'is_developer') and request.user.is_developer):
             return qs
-        return qs.exclude(role='developer')
+        # Hide by both role and the explicit is_developer flag
+        return qs.exclude(role='developer').exclude(is_developer=True)
     
     fieldsets = (
         (None, {'fields': ('username', 'password')}),

@@ -24,7 +24,11 @@ class IsDeveloper(permissions.BasePermission):
         return request.user.is_authenticated and hasattr(request.user, 'is_developer') and request.user.is_developer
 
 
-class MaintenanceModeViewSet(viewsets.ModelViewSet):
+class MaintenanceModeViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Read-only viewset for maintenance mode status.
+    Write operations are disabled for security.
+    """
     queryset = MaintenanceMode.objects.all()
     serializer_class = MaintenanceModeSerializer
     permission_classes = [IsDeveloper]
@@ -35,40 +39,6 @@ class MaintenanceModeViewSet(viewsets.ModelViewSet):
         maintenance = MaintenanceMode.get_current()
         serializer = self.get_serializer(maintenance)
         return Response(serializer.data)
-    
-    @action(detail=False, methods=['post'])
-    def toggle(self, request):
-        """Toggle maintenance mode on/off."""
-        maintenance = MaintenanceMode.get_current()
-        old_status = maintenance.is_active
-        maintenance.is_active = not maintenance.is_active
-        maintenance.updated_by = request.user
-        maintenance.save()
-        
-        # If activated, clear device fingerprints for targeted roles to force logout
-        if maintenance.is_active and not old_status:
-            from apps.users.models import User
-            User.objects.filter(role__in=maintenance.target_roles).update(device_fingerprint=None)
-            
-        serializer = self.get_serializer(maintenance)
-        return Response(serializer.data)
-    
-    @action(detail=False, methods=['post'])
-    def update_config(self, request):
-        """Update maintenance mode configuration."""
-        maintenance = MaintenanceMode.get_current()
-        old_status = maintenance.is_active
-        serializer = self.get_serializer(maintenance, data=request.data, partial=True)
-        if serializer.is_valid():
-            maintenance = serializer.save(updated_by=request.user)
-            
-            # If newly activated, clear device fingerprints for targeted roles
-            if maintenance.is_active and not old_status:
-                from apps.users.models import User
-                User.objects.filter(role__in=maintenance.target_roles).update(device_fingerprint=None)
-            
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 

@@ -256,10 +256,11 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Filter queryset based on user role. Hide developers and superusers from admins."""
         user = self.request.user
-        if user.is_developer:
+        if user.is_superuser or user.is_developer:
             return User.objects.all()
-        if user.is_admin:
-            return User.objects.exclude(role='developer').exclude(is_superuser=True)
+        if user.role == 'admin':
+            # Strictly hide anyone with is_developer=True or role='developer'
+            return User.objects.exclude(role='developer').exclude(is_developer=True).exclude(is_superuser=True)
         return User.objects.filter(id=user.id)
     
     @action(detail=False, methods=['get', 'patch'], permission_classes=[IsAuthenticated])
