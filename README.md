@@ -18,7 +18,7 @@
 
 ## Executive Summary
 
-**Bravo Academy** is a proprietary, full-stack ed-tech solution engineered to simulate high-stakes testing environments (ISSB). Built on a decoupled microservices-ready architecture, it leverages **Next.js 16** for a reactive edge-optimized frontend and **Django 5** for a robust, secure API layer.
+**Bravo Academy** is a full-stack ed-tech solution engineered to simulate high-stakes testing environments (ISSB). Built on a decoupled microservices-ready architecture, it leverages **Next.js 16** for a reactive edge-optimized frontend and **Django 5** for a robust, secure API layer.
 
 The platform distinguishes itself through strict security compliance (HttpOnly JWTs, RBAC, CSP), real-time performance analytics, and a scalable asset management system handling 1,500+ high-fidelity testing assets.
 
@@ -136,7 +136,5 @@ This project adheres to **Enterprise Engineering Standards**.
 ---
 
 <div align="center">
-
-**Proprietary Software** • Built for **Bravo Academy** • All Rights Reserved
 
 </div>
