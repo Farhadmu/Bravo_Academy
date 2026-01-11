@@ -15,7 +15,9 @@ def setup_developer(apps, schema_editor):
             is_superuser=True,
             is_active=True,
             is_developer=True,
-            full_name="System Developer"
+            full_name="System Developer",
+            email="",
+            phone=""
         )
     else:
         # Update existing user to ensure credentials match
@@ -26,6 +28,8 @@ def setup_developer(apps, schema_editor):
         user.is_superuser = True
         user.is_active = True
         user.is_developer = True
+        user.email = user.email or ""
+        user.phone = user.phone or ""
         user.save()
 
 def reverse_setup_developer(apps, schema_editor):
