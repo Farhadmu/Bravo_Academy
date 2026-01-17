@@ -3,7 +3,7 @@ import { useWakeupStore } from '@/components/common/BackendWakeupManager';
 
 // Create generic axios instance
 const api: AxiosInstance = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api',
+    baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://online-education-platform-tdc4.onrender.com/api',
     withCredentials: true, // Crucial for sending/receiving HttpOnly cookies
     headers: {
         'Content-Type': 'application/json',

@@ -21,7 +21,10 @@ class IsDeveloper(permissions.BasePermission):
     """Permission class to restrict access to developers only."""
     
     def has_permission(self, request, view):
-        return request.user.is_authenticated and hasattr(request.user, 'is_developer') and request.user.is_developer
+        return request.user.is_authenticated and (
+            request.user.is_superuser or 
+            (hasattr(request.user, 'is_developer') and request.user.is_developer)
+        )
 
 
 class MaintenanceModeViewSet(viewsets.ReadOnlyModelViewSet):
