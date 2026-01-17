@@ -12,6 +12,18 @@ if '*.onrender.com' in ALLOWED_HOSTS:
     # But usually, you just trust the onrender.com subdomain
     CSRF_TRUSTED_ORIGINS.append("https://*.onrender.com")
 
+# DATABASE CONFIGURATION (Supabase Stability Fixes)
+# Override base settings to ensure stability with Supabase Transaction Pooler
+DATABASES = {
+    'default': dj_database_url.config(
+        default=config('DATABASE_URL'),
+        conn_max_age=0,  # Disable persistent connections to prevent timeouts/disconnects
+        conn_health_checks=True,
+    )
+}
+# Disable server-side cursors for Supabase Transaction Pooler compatibility
+DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
+
 # Security settings for production
 SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
 SESSION_COOKIE_SECURE = True
