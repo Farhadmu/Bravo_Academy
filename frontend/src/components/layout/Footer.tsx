@@ -40,7 +40,7 @@ export default function Footer() {
                     </div>
                 </div>
                 <div className="mt-8 pt-8 border-t border-gray-800 text-center text-sm text-gray-400">
-                    {/* Copyright removed as per user request */}
+                    <p>&copy; {new Date().getFullYear()} Bravo Academy. All rights reserved.</p>
                 </div>
             </div>
         </footer>

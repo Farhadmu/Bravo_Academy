@@ -84,13 +84,13 @@ export default function LoginPage() {
                 device_fingerprint: deviceFingerprint,
             })
 
-            const { user, access } = response.data
+            const { user, access, refresh } = response.data
 
             // Clear slow load toast if it exists
             if (slowLoadId) toast.dismiss(slowLoadId)
             clearTimeout(timer)
 
-            login(user, access)
+            login(user, access, refresh)
             toast.success('Logged in successfully!')
 
             if (user.role === 'developer') {

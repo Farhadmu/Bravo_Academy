@@ -12,8 +12,9 @@ export interface User {
 interface AuthState {
     user: User | null;
     accessToken: string | null;
+    refreshToken: string | null;
     isAuthenticated: boolean;
-    login: (user: User, accessToken: string) => void;
+    login: (user: User, accessToken: string, refreshToken: string) => void;
     logout: () => void;
     updateUser: (user: Partial<User>) => void;
 }
@@ -23,10 +24,12 @@ export const useAuthStore = create<AuthState>()(
         (set) => ({
             user: null,
             accessToken: null,
+            refreshToken: null,
             isAuthenticated: false,
-            login: (user, accessToken) => {
+            login: (user, accessToken, refreshToken) => {
                 localStorage.setItem('accessToken', accessToken);
-                set({ user, accessToken, isAuthenticated: true });
+                localStorage.setItem('refreshToken', refreshToken);
+                set({ user, accessToken, refreshToken, isAuthenticated: true });
             },
             logout: async () => {
                 try {
@@ -36,7 +39,8 @@ export const useAuthStore = create<AuthState>()(
                     console.error('Logout API call failed:', error);
                 } finally {
                     localStorage.removeItem('accessToken');
-                    set({ user: null, accessToken: null, isAuthenticated: false });
+                    localStorage.removeItem('refreshToken');
+                    set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false });
                 }
             },
             updateUser: (userData) => {

@@ -50,7 +50,7 @@ export default function LeadershipPage() {
                                     Sakibur Rahman is responsible for the design, engineering, and ongoing technical development of the Bangladesh Bravo Academy digital testing platform.
                                 </p>
                                 <p className="text-base md:text-lg leading-relaxed text-center lg:text-left">
-                                    The system was architected as a specialized platform to meet the specific operational requirements of ISSB cognitive preparation, including strict time enforcement, controlled access, and detailed performance analysis.
+                                    The system was architected as a proprietary, internal platform to meet the specific operational requirements of ISSB cognitive preparation, including strict time enforcement, controlled access, and detailed performance analysis.
                                 </p>
                                 <div className="bg-blue-50/50 p-6 rounded-xl border-l-4 border-blue-500">
                                     <p className="text-base md:text-lg leading-relaxed italic text-slate-700 m-0">
