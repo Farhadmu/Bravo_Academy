@@ -1,0 +1,52 @@
+{
+    "autoDeploy": "yes",
+    "autoDeployTrigger": "commit",
+    "branch": "main",
+    "createdAt": "2026-01-10T09:06:15.181896Z",
+    "dashboardUrl": "https://dashboard.render.com/web/srv-d5h1d1n5r7bs73b4qthg",
+    "environmentId": "evm-d5h1d1a4d50c738od4ng",
+    "id": "srv-d5h1d1n5r7bs73b4qthg",
+    "name": "my-online-defense-coaching-platform",
+    "notifyOnFail": "default",
+    "ownerId": "tea-d5h0kqadbo4c73dlnr1g",
+    "repo": "https://github.com/SakiburRahmann/My-Online-Defense-Coaching-Platform",
+    "rootDir": "",
+    "serviceDetails": {
+        "buildPlan": "starter",
+        "cache": {
+            "profile": "no-cache"
+        },
+        "env": "python",
+        "envSpecificDetails": {
+            "buildCommand": "./backend/scripts/render_build.sh",
+            "startCommand": "cd backend && gunicorn config.wsgi:application"
+        },
+        "healthCheckPath": "",
+        "ipAllowList": [
+            {
+                "cidrBlock": "0.0.0.0/0",
+                "description": "everywhere"
+            }
+        ],
+        "maintenanceMode": {
+            "enabled": false,
+            "uri": ""
+        },
+        "numInstances": 1,
+        "openPorts": null,
+        "plan": "free",
+        "previews": {
+            "generation": "off"
+        },
+        "pullRequestPreviewsEnabled": "no",
+        "region": "singapore",
+        "runtime": "python",
+        "sshAddress": "srv-d5h1d1n5r7bs73b4qthg@ssh.singapore.render.com",
+        "url": "https://my-online-defense-coaching-platform.onrender.com"
+    },
+    "slug": "my-online-defense-coaching-platform",
+    "suspended": "not_suspended",
+    "suspenders": [],
+    "type": "web_service",
+    "updatedAt": "2026-01-10T12:10:57.265291Z"
+}

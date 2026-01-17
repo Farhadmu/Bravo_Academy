@@ -30,7 +30,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('questions', '0003_alter_question_options_question_bank_order_and_more'),
-        ('tests', '0001_initial'),
+        ('tests', '0004_test_category'),
     ]
 
     operations = [

@@ -3,15 +3,16 @@ from .models import Result, PerformanceAnalytics
 
 class ResultSerializer(serializers.ModelSerializer):
     test_name = serializers.ReadOnlyField(source='test.name')
-    test_category = serializers.ReadOnlyField(source='test.category')
+    test_category = serializers.CharField(source='test.category', read_only=True)
     question_type = serializers.SerializerMethodField()
 
     class Meta:
         model = Result
         fields = [
-            'id', 'test', 'test_name', 'test_category', 'question_type', 'test_session', 
+            'id', 'user', 'test', 'test_name', 'test_category', 'test_session', 
             'total_questions', 'correct_answers', 'wrong_answers', 'unanswered',
-            'score_percentage', 'passed', 'time_taken_seconds', 'accuracy', 'created_at'
+            'score_percentage', 'passed', 'time_limit_seconds', 'time_taken_seconds', 
+            'accuracy', 'set_number', 'created_at', 'question_type'
         ]
 
     def get_question_type(self, obj):

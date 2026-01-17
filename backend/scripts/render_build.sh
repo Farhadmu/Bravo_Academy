@@ -1,14 +1,21 @@
 #!/usr/bin/env bash
-# exit on error
-# exit on error
+# Render.com build script for Django (Memory Efficient)
 set -o errexit
+set -o nounset
+set -o pipefail
 
-# Only cd into backend if we are not already there
-if [ -d "backend" ]; then
-  cd backend
-fi
+echo "🔧 Build started..."
+python -m venv venv
+source venv/bin/activate
 
-pip install -r requirements.txt
+echo "📦 Installing dependencies (no-cache to save RAM)..."
+pip install --upgrade pip
+pip install -r requirements.txt --no-cache-dir
 
+echo "🎨 Collecting static assets..."
 python manage.py collectstatic --no-input
-python manage.py migrate
+
+echo "🗄️ Running migrations..."
+python manage.py migrate --no-input
+
+echo "✅ Build successful!"

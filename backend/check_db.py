@@ -1,1 +1,0 @@
-import os; import django; from django.conf import settings; os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.development'); django.setup(); print(f'Engine: {settings.DATABASES['default']['ENGINE']}'); print(f'Name: {settings.DATABASES['default']['NAME']}')
