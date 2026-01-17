@@ -5,9 +5,6 @@ from .base import *
 
 DEBUG = False
 
-# Database production tweaks for Supabase PgBouncer (Pooler)
-DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
-
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*.onrender.com', cast=Csv())
 CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in ALLOWED_HOSTS if not host.startswith('*')]
 if '*.onrender.com' in ALLOWED_HOSTS:
