@@ -3,7 +3,7 @@ services:
     name: online-edu-backend
     runtime: python
     buildCommand: "./backend/scripts/render_build.sh"
-    startCommand: "cd backend && gunicorn config.wsgi:application"
+    startCommand: "cd backend && ./venv/bin/gunicorn config.wsgi:application"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
