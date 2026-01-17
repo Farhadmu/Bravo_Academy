@@ -105,7 +105,8 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': dj_database_url.config(
         default=config('DATABASE_URL', default='postgresql://postgres:postgres@localhost:5432/online_edu'),
-        conn_max_age=600
+        conn_max_age=60,  # Reduced for Supabase pooler compatibility on free tier
+        conn_health_checks=True
     )
 }
 
