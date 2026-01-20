@@ -42,9 +42,7 @@ urlpatterns = [
     path('api/auth/', include('apps.users.urls')),
     path('api/tests/', include('apps.tests.urls')),
     path('api/questions/', include('apps.questions.urls')),
-    path('api/payments/', include('apps.payments.urls')),
     path('api/results/', include('apps.results.urls')),
-    path('api/system/', include('apps.system.urls')),
 ]
 
 # Serve media files (Always serve in this specific setup for image visibility)

@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuthStore } from '@/store/auth'
 import api from '@/lib/api'
-import { getDeviceFingerprint } from '@/lib/fingerprint'
 import { Shield, AlertCircle, Info } from "lucide-react"
 import { toast } from 'sonner'
 
@@ -76,13 +75,10 @@ export default function LoginPage() {
         }, 5000)
 
         try {
-            const deviceFingerprint = await getDeviceFingerprint()
-
             const response = await api.post('/auth/login/', {
                 username: data.username,
                 password: data.password,
-                device_fingerprint: deviceFingerprint,
-            })
+            });
 
             const { user, access, refresh } = response.data
 

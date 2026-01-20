@@ -19,10 +19,7 @@ from .serializers import (
     ChangePasswordSerializer,
     UserCreateSerializer
 )
-from .throttling import LoginRateThrottle
-from utils.device_tracking import get_client_ip
 from apps.tests.models import Test
-from apps.payments.models import Payment, UserTestAccess
 
 User = get_user_model()
 import logging
@@ -34,30 +31,18 @@ from apps.system.utils import log_login_attempt
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     """
-    Custom login view with device tracking.
-    Checks if user can login from the device and updates device info.
+    Simplified login view - standard JWT authentication.
     """
     serializer_class = CustomTokenObtainPairSerializer
-    throttle_classes = [LoginRateThrottle]
     
     def post(self, request, *args, **kwargs):
         username = request.data.get('username')
-        # Proceed with normal login first to verify credentials
+        
         try:
             response = super().post(request, *args, **kwargs)
+            return response
         except Exception as e:
-            # Log failed attempt
-            if username:
-                user = User.objects.filter(username=username).first()
-                log_login_attempt(
-                    request, 
-                    user=user, 
-                    username_attempted=username, 
-                    status='failed', 
-                    failure_reason=str(e)
-                )
-            
-            # Check if user exists but password failed
+            # Provide user-friendly error messages
             if username:
                 user_exists = User.objects.filter(username=username).exists()
                 if user_exists:
@@ -71,90 +56,6 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                         'detail': f'No account found with the username "{username}". Please check for typos.'
                     }, status=status.HTTP_401_UNAUTHORIZED)
             raise e
-
-        if response.status_code == 200:
-            # Set cookies
-            access_token = response.data.get('access')
-            refresh_token = response.data.get('refresh')
-            
-            if access_token:
-                response.set_cookie(
-                    key=settings.SIMPLE_JWT['AUTH_COOKIE'],
-                    value=access_token,
-                    expires=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'],
-                    secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
-                    httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
-                    samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
-                )
-            
-            if refresh_token:
-                response.set_cookie(
-                    key=settings.SIMPLE_JWT['AUTH_COOKIE_REFRESH'],
-                    value=refresh_token,
-                    expires=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'],
-                    secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
-                    httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
-                    samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
-                )
-            
-            # Login successful, now check device fingerprint and maintenance mode
-            device_fingerprint = request.data.get('device_fingerprint', '')
-            
-            try:
-                user = User.objects.get(username=username)
-                
-                # Check for Maintenance Mode
-                from apps.system.models import MaintenanceMode
-                maintenance = MaintenanceMode.get_current()
-                if maintenance.is_role_blocked(user.role):
-                    log_login_attempt(
-                        request, 
-                        user=user, 
-                        username_attempted=username, 
-                        status='failed', 
-                        failure_reason='Maintenance Mode'
-                    )
-                    # Clear cookies if role is blocked
-                    response = Response({
-                        'error': 'Maintenance Mode',
-                        'message': maintenance.message,
-                        'detail': 'The system is currently under maintenance for your role.'
-                    }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
-                    response.delete_cookie(settings.SIMPLE_JWT['AUTH_COOKIE'])
-                    response.delete_cookie(settings.SIMPLE_JWT['AUTH_COOKIE_REFRESH'])
-                    return response
-
-                # Check if user can login from this device
-                if not user.can_login_from_device(device_fingerprint):
-                    log_login_attempt(
-                        request, 
-                        user=user, 
-                        username_attempted=username, 
-                        status='failed', 
-                        failure_reason='Multi-device login blocked'
-                    )
-                    # Clear cookies if multi-device login blocked
-                    response = Response({
-                        'error': 'This ID is already logged in on another device. You cannot login using a different device with the same ID.'
-                    }, status=status.HTTP_403_FORBIDDEN)
-                    response.delete_cookie(settings.SIMPLE_JWT['AUTH_COOKIE'])
-                    response.delete_cookie(settings.SIMPLE_JWT['AUTH_COOKIE_REFRESH'])
-                    return response
-                
-                # Update device info
-                ip_address = get_client_ip(request)
-                user.update_device_info(device_fingerprint, ip_address)
-                
-                # Log successful login
-                log_login_attempt(request, user=user, username_attempted=username, status='success')
-                
-            except User.DoesNotExist:
-                # Should not happen as super().post() was successful
-                pass
-            except Exception as e:
-                logger.error(f"Error updating device info: {e}", exc_info=True)
-        
-        return response
 
 
 class CookieTokenRefreshView(TokenRefreshView):
@@ -303,13 +204,7 @@ class UserViewSet(viewsets.ModelViewSet):
         user.save()
         return Response({'detail': f'Password for {user.username} has been reset successfully.'})
 
-    @action(detail=True, methods=['post'], permission_classes=[IsAdminUser])
-    def reset_device(self, request, pk=None):
-        """Admin action to reset a user's device fingerprint."""
-        user = self.get_object()
-        user.device_fingerprint = None
-        user.save()
-        return Response({'detail': f'Device fingerprint for {user.username} has been cleared.'})
+
 
 
 class AdminDashboardViewSet(viewsets.ViewSet):
@@ -321,8 +216,7 @@ class AdminDashboardViewSet(viewsets.ViewSet):
         # Stats
         total_students = User.objects.filter(role='student').count()
         total_tests = Test.objects.count()
-        pending_payments = Payment.objects.filter(status='pending').count()
-        total_revenue = Payment.objects.filter(status='verified').aggregate(Sum('amount'))['amount__sum'] or 0
+        total_revenue = 0  # Payment system removed
 
         # Registration Stats (Last 7 days)
         last_7_days = timezone.now() - timedelta(days=7)

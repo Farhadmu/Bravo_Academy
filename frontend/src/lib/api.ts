@@ -1,5 +1,4 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
-import { useWakeupStore } from '@/components/common/BackendWakeupManager';
 
 // Create generic axios instance
 const getBaseURL = () => {
@@ -34,7 +33,7 @@ const getCookie = (name: string): string | null => {
     return null;
 };
 
-// Request interceptor to add CSRF token and handle wakeup
+// Request interceptor to add CSRF token
 api.interceptors.request.use(
     (config) => {
         // Handle CSRF token
@@ -43,23 +42,7 @@ api.interceptors.request.use(
             config.headers['X-CSRFToken'] = csrfToken;
         }
 
-        // Handle cold start detection
-        const isClient = typeof window !== 'undefined';
-        if (isClient) {
-            // Start a timer to check if request takes too long
-            const timerId = setTimeout(() => {
-                try {
-                    useWakeupStore.getState().setWakingUp(true);
-                } catch (e) {
-                    console.error('Failed to set waking up state:', e);
-                }
-            }, 2500); // Trigger notification after 2.5s of no response
-
-            (config as any)._wakeupTimerId = timerId;
-        }
-
-        // Authorization header is now handled automatically by HttpOnly cookies
-        // But we keep this for backwards compatibility or mobile clients if needed
+        // Authorization header with Bearer token
         const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
         if (token && !config.headers.Authorization) {
             config.headers.Authorization = `Bearer ${token}`;
@@ -70,32 +53,13 @@ api.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
-// Response interceptor to handle token refresh and cleanup wakeup timer
+// Response interceptor to handle token refresh
 api.interceptors.response.use(
     (response) => {
-        const timerId = (response.config as any)._wakeupTimerId;
-        if (timerId) {
-            clearTimeout(timerId);
-            try {
-                useWakeupStore.getState().setWakingUp(false);
-            } catch (e) {
-                console.error('Failed to clear waking up state:', e);
-            }
-        }
         return response;
     },
     async (error: AxiosError) => {
-        const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean, _wakeupTimerId?: any };
-
-        // Cleanup timer on error too
-        if (originalRequest?._wakeupTimerId) {
-            clearTimeout(originalRequest._wakeupTimerId);
-            try {
-                useWakeupStore.getState().setWakingUp(false);
-            } catch (e) {
-                console.error('Failed to clear waking up state on error:', e);
-            }
-        }
+        const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
 
         // If error is 401 and we haven't retried yet
         // AND it's not a login or register request (where 401 means invalid credentials/failure)

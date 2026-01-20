@@ -18,23 +18,11 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    """Custom JWT token serializer with user information and device tracking."""
-    
-    device_fingerprint = serializers.CharField(required=True, write_only=True)
+    """Custom JWT token serializer with user information."""
     
     def validate(self, attrs):
-        # Get device fingerprint from request
-        device_fingerprint = attrs.pop('device_fingerprint', None)
-        
-        # Get the token
         data = super().validate(attrs)
-        
-        # Add custom claims
         data['user'] = UserSerializer(self.user).data
-        
-        # Store device fingerprint in request for middleware
-        self.context['request'].device_fingerprint = device_fingerprint
-        
         return data
 
 

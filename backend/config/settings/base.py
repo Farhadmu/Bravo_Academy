@@ -57,9 +57,7 @@ LOCAL_APPS = [
     'apps.users',
     'apps.tests',
     'apps.questions',
-    'apps.payments',
     'apps.results',
-    'apps.system',  # Developer tools and maintenance mode
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -72,8 +70,6 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'apps.system.middleware.MaintenanceModeMiddleware',  # Check maintenance mode
-    'apps.system.middleware.MonitoringMiddleware',      # Log visits and sessions
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -131,12 +127,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Password hashers - Argon2 for maximum security
+# Password hashers - PBKDF2 for reliability
 PASSWORD_HASHERS = [
-    'django.contrib.auth.hashers.Argon2PasswordHasher',
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
     'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
-    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
 ]
 
 # Internationalization
@@ -161,7 +155,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'apps.users.authentication.CookieJWTAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
@@ -183,16 +177,6 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.MultiPartParser',
     ),
     'EXCEPTION_HANDLER': 'utils.exceptions.custom_exception_handler',
-    'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.AnonRateThrottle',
-        'rest_framework.throttling.UserRateThrottle'
-    ],
-    'DEFAULT_THROTTLE_RATES': {
-        'anon': '100/day',
-        'user': '1000/day',
-        'login': '10/minute',   # Specific throttle for login attempts
-        'register': '5/hour',   # Specific throttle for registration
-    }
 }
 
 # JWT Settings
@@ -211,14 +195,6 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'user_id',
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
     'TOKEN_TYPE_CLAIM': 'token_type',
-    
-    # Cookie Settings
-    'AUTH_COOKIE': 'accessToken',      # Cookie name
-    'AUTH_COOKIE_REFRESH': 'refreshToken', # Refresh cookie name
-    'AUTH_COOKIE_SECURE': config('SESSION_COOKIE_SECURE', default=False, cast=bool), # True in prod
-    'AUTH_COOKIE_HTTP_ONLY': True,      # Prevent client-side JS from reading the cookie
-    'AUTH_COOKIE_PATH': '/',           # Cookie path
-    'AUTH_COOKIE_SAMESITE': 'Lax',     # SameSite attribute for cookie
 }
 
 # CORS settings

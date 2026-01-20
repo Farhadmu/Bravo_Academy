@@ -58,11 +58,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     full_name = models.CharField(max_length=255, blank=True)
     phone = models.CharField(max_length=20, blank=True)
     
-    # Device tracking for one-device-per-user enforcement
-    device_fingerprint = models.CharField(max_length=255, blank=True, null=True, db_index=True)
-    last_login_device = models.CharField(max_length=255, blank=True, null=True)
-    last_login_ip = models.GenericIPAddressField(blank=True, null=True)
-    
     # Permissions
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -112,23 +107,4 @@ class User(AbstractBaseUser, PermissionsMixin):
         help_text="Designates whether the user can access to Developer Portal."
     )
     
-    def update_device_info(self, fingerprint, ip_address):
-        """Update user's device fingerprint and IP."""
-        self.device_fingerprint = fingerprint
-        self.last_login_ip = ip_address
-        self.last_login = timezone.now()
-        self.save(update_fields=['device_fingerprint', 'last_login_ip', 'last_login'])
-    
-    def can_login_from_device(self, fingerprint):
-        """
-        Check if user can login from the given device.
-        Returns True if:
-        - No device fingerprint set yet (first login)
-        - Device fingerprint matches stored fingerprint
-        """
-        if self.role == 'admin' or self.role == 'developer' or self.is_superuser:
-            return True
 
-        if not self.device_fingerprint:
-            return True
-        return self.device_fingerprint == fingerprint
