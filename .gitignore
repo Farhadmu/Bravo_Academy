@@ -30,7 +30,7 @@ db.sqlite3-journal
 *.pyc
 media/
 staticfiles/
-static/
+# static/ (Removed to allow .gitkeep in backend/static)
 
 # Virtual Environment
 venv/
