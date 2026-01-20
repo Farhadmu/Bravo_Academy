@@ -127,8 +127,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Password hashers - PBKDF2 for reliability
+# Password hashers - Supporting both Argon2 (existing) and PBKDF2
 PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
     'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
 ]
