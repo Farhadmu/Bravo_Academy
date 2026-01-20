@@ -13,11 +13,12 @@ if '*.onrender.com' in ALLOWED_HOSTS:
     CSRF_TRUSTED_ORIGINS.append("https://*.onrender.com")
 
 # DATABASE CONFIGURATION (Supabase Professional Stability Fixes)
-# Using CONN_MAX_AGE=0 to force fresh connections and avoid pooler-side hangs.
+# Using CONN_MAX_AGE=60 to reuse connections and reduce TLS handshake overhead.
+# This is critical for stabilizing dashboard loads where multiple API calls are made.
 DATABASES = {
     'default': dj_database_url.config(
         default=config('DATABASE_URL'),
-        conn_max_age=0,
+        conn_max_age=60,
     )
 }
 
