@@ -14,17 +14,13 @@ if '*.onrender.com' in ALLOWED_HOSTS:
 
 # DATABASE CONFIGURATION (Supabase Professional Stability Fixes)
 # Using CONN_MAX_AGE=60 to reuse connections and reduce TLS handshake overhead.
-# This is critical for stabilizing dashboard loads where multiple API calls are made.
+# This works for both Direct Connections and Poolers.
 DATABASES = {
     'default': dj_database_url.config(
         default=config('DATABASE_URL'),
         conn_max_age=60,
     )
 }
-
-# Override port to 5432 (Session Mode) if Transaction Mode (6543) is timeout out.
-# Session mode is generally more stable for Django workers on Render.
-DATABASES['default']['PORT'] = '5432'
 
 # Essential PostgreSQL Options for Supabase (Direct or Pooler)
 DATABASES['default']['OPTIONS'] = {
