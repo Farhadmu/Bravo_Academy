@@ -15,7 +15,7 @@ pip install -r requirements.txt --no-cache-dir
 echo "🎨 Collecting static assets..."
 python manage.py collectstatic --no-input
 
-echo "🗄️ Running migrations..."
-python manage.py migrate --no-input
+# echo "🗄️ Running migrations..."
+# python manage.py migrate --no-input
 
 echo "✅ Build successful!"

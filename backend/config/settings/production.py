@@ -24,7 +24,7 @@ DATABASES = {
 # Essential PostgreSQL Options for Supabase (Direct or Pooler)
 DATABASES['default']['OPTIONS'] = {
     'sslmode': 'require',
-    'connect_timeout': 10,
+    'connect_timeout': 30,
 }
 
 # Disable server-side cursors for Supabase Transaction Pooler (PgBouncer/Supavisor) compatibility
