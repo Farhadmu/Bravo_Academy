@@ -21,13 +21,29 @@ DATABASES = {
     )
 }
 
+# Override port to 5432 (Session Mode) if Transaction Mode (6543) is timeout out.
+# Session mode is generally more stable for Django workers on Render.
+DATABASES['default']['PORT'] = '5432'
+
 # Essential PostgreSQL Options for Supabase (Direct or Pooler)
 DATABASES['default']['OPTIONS'] = {
     'sslmode': 'require',
     'connect_timeout': 30,
+    # TCP Keepalives to prevent silent connection drops
+    'keepalives': 1,
+    'keepalives_idle': 30,
+    'keepalives_interval': 10,
+    'keepalives_count': 5,
 }
 
+# Add TCP User Timeout (Linux specific) to drop dead connections faster
+import platform
+if platform.system() == 'Linux':
+    # tcp_user_timeout is in milliseconds (30 seconds)
+    DATABASES['default']['OPTIONS']['tcp_user_timeout'] = 30000
+
 # Disable server-side cursors for Supabase Transaction Pooler (PgBouncer/Supavisor) compatibility
+# Still beneficial in Session mode for some configurations.
 DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
 
 # Security settings for production
