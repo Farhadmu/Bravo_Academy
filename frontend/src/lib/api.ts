@@ -4,10 +4,16 @@ import { useWakeupStore } from '@/components/common/BackendWakeupManager';
 // Create generic axios instance
 const getBaseURL = () => {
     let url = process.env.NEXT_PUBLIC_API_URL || 'https://online-education-platform-tdc4.onrender.com/api';
-    // Ensure local development URL always has /api suffix if missing
-    if (url.includes('localhost') && !url.endsWith('/api')) {
-        url = url.replace(/\/$/, '') + '/api';
+
+    // Normalize: remove trailing slash
+    url = url.replace(/\/$/, '');
+
+    // Ensure URL always has /api suffix if missing
+    // We check if it already ends with /api or includes /api/ to avoid double appending
+    if (!url.endsWith('/api') && !url.includes('/api/')) {
+        url = url + '/api';
     }
+
     return url;
 };
 
