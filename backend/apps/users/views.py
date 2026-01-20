@@ -26,7 +26,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-from apps.system.utils import log_login_attempt
+# from apps.system.utils import log_login_attempt  # Removed apps.system
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -116,10 +116,10 @@ class LogoutView(viewsets.ViewSet):
                 token = RefreshToken(refresh_token)
                 token.blacklist()
             
-            # Clear device fingerprint on logout
-            user = request.user
-            user.device_fingerprint = None
-            user.save(update_fields=['device_fingerprint'])
+            # Clear device fingerprint on logout (Field deleted)
+            # user = request.user
+            # user.device_fingerprint = None
+            # user.save(update_fields=['device_fingerprint'])
             
             response = Response({'detail': 'Successfully logged out.'}, status=status.HTTP_200_OK)
             response.delete_cookie(settings.SIMPLE_JWT['AUTH_COOKIE'])
@@ -238,19 +238,19 @@ class AdminDashboardViewSet(viewsets.ViewSet):
                 'students': count
             })
 
-        # Recent Payments
-        recent_payments = Payment.objects.filter(status='pending').select_related('user').order_by('-created_at')[:5]
+        # Recent Payments (Removed as payment app is deleted)
+        # recent_payments = Payment.objects.filter(status='pending').select_related('user').order_by('-created_at')[:5]
         
-        from apps.payments.serializers import PaymentSerializer
-        payment_serializer = PaymentSerializer(recent_payments, many=True)
+        # from apps.payments.serializers import PaymentSerializer
+        # payment_serializer = PaymentSerializer(recent_payments, many=True)
 
         return Response({
             'stats': {
                 'total_students': total_students,
                 'total_tests': total_tests,
-                'pending_payments': pending_payments,
+                'pending_payments': 0,
                 'total_revenue': total_revenue,
             },
             'registration_data': registration_data,
-            'recent_payments': payment_serializer.data
+            'recent_payments': []
         })

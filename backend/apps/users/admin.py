@@ -27,7 +27,7 @@ class UserAdmin(BaseUserAdmin):
         (None, {'fields': ('username', 'password')}),
         ('Personal Info', {'fields': ('full_name', 'email', 'phone')}),
         ('Permissions', {'fields': ('role', 'is_active', 'is_staff', 'is_superuser')}),
-        ('Device Tracking', {'fields': ('device_fingerprint', 'last_login_device', 'last_login_ip')}),
+        # ('Device Tracking', {'fields': ('device_fingerprint', 'last_login_device', 'last_login_ip')}),
         ('Important Dates', {'fields': ('last_login', 'created_at', 'updated_at')}),
     )
     
