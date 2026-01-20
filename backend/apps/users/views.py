@@ -42,20 +42,31 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             response = super().post(request, *args, **kwargs)
             return response
         except Exception as e:
-            # Provide user-friendly error messages
+            # Log the full error for internal debugging if needed
+            logger.warning(f"Login failed for user '{username}': {str(e)}")
+            
+            # Provide user-friendly error messages instead of 500 crashes
             if username:
-                user_exists = User.objects.filter(username=username).exists()
-                if user_exists:
-                    return Response({
-                        'error': 'Incorrect Password',
-                        'detail': 'The password you entered is incorrect. Please try again or contact the admin.'
-                    }, status=status.HTTP_401_UNAUTHORIZED)
-                else:
-                    return Response({
-                        'error': 'User Not Found',
-                        'detail': f'No account found with the username "{username}". Please check for typos.'
-                    }, status=status.HTTP_401_UNAUTHORIZED)
-            raise e
+                try:
+                    user_exists = User.objects.filter(username=username).exists()
+                    if user_exists:
+                        return Response({
+                            'error': 'Incorrect Password',
+                            'detail': 'The password you entered is incorrect. Please try again.'
+                        }, status=status.HTTP_401_UNAUTHORIZED)
+                    else:
+                        return Response({
+                            'error': 'User Not Found',
+                            'detail': f'No account found with the username "{username}". Please check for typos.'
+                        }, status=status.HTTP_401_UNAUTHORIZED)
+                except Exception as db_err:
+                    logger.error(f"Database error during login failure analysis: {str(db_err)}")
+            
+            # Fallback for unexpected errors
+            return Response({
+                'error': 'Authentication Failed',
+                'detail': 'Unable to log in with provided credentials.'
+            }, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class CookieTokenRefreshView(TokenRefreshView):

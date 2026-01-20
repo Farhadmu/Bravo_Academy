@@ -26,29 +26,7 @@ def health_check(request):
     }, status=status.HTTP_200_OK)
 
 
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def db_ping(request):
-    """
-    Database ping endpoint.
-    Verifies database connectivity.
-    """
-    from django.db import connection
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT 1")
-            row = cursor.fetchone()
-            return Response({
-                'status': 'healthy',
-                'database': 'connected',
-                'result': row[0]
-            }, status=status.HTTP_200_OK)
-    except Exception as e:
-        return Response({
-            'status': 'unhealthy',
-            'database': 'disconnected',
-            'error': str(e)
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 
 urlpatterns = [
@@ -62,7 +40,6 @@ urlpatterns = [
     
     # Health check
     path('api/health/', health_check, name='health-check'),
-    path('api/db-ping/', db_ping, name='db-ping'),
     
     # API endpoints
     path('api/auth/', include('apps.users.urls')),
