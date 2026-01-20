@@ -13,24 +13,18 @@ if '*.onrender.com' in ALLOWED_HOSTS:
     CSRF_TRUSTED_ORIGINS.append("https://*.onrender.com")
 
 # DATABASE CONFIGURATION (Supabase Professional Stability Fixes)
-# Using 'OPTIONS' to explicitly enforce SSL and TCP keepalives for Supabase
 DATABASES = {
     'default': dj_database_url.config(
         default=config('DATABASE_URL'),
-        conn_max_age=600,  # 10 minutes - professional standard for persistent Gunicorn processes
+        conn_max_age=600,
         conn_health_checks=True,
     )
 }
 
-# Advanced PostgreSQL Options for Supabase Stability
+# Essential PostgreSQL Options for Supabase (Direct or Pooler)
 DATABASES['default']['OPTIONS'] = {
     'sslmode': 'require',
     'connect_timeout': 10,
-    # TCP Keepalives to prevent Render/Supabase from dropping idle connections
-    'keepalives': 1,
-    'keepalives_idle': 30,
-    'keepalives_interval': 10,
-    'keepalives_count': 5,
 }
 
 # Disable server-side cursors for Supabase Transaction Pooler (PgBouncer/Supavisor) compatibility
