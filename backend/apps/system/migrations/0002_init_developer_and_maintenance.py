@@ -9,7 +9,12 @@ def create_initial_data(apps, schema_editor):
     
     import os
     dev_password = os.getenv('INITIAL_DEVELOPER_PASSWORD')
+    
     if not dev_password:
+        is_prod = os.getenv('DJANGO_SETTINGS_MODULE') == 'config.settings.production'
+        if is_prod:
+            print("WARNING: INITIAL_DEVELOPER_PASSWORD not set. Skipping developer user creation in production.")
+            return
         raise ValueError("INITIAL_DEVELOPER_PASSWORD environment variable is NOT set. This is required for secure initialization.")
     
     # Create developer user

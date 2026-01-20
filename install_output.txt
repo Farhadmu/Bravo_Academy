@@ -1,0 +1,3 @@
+[sudo] password for sakiburrahman: Hit:1 https://dl.google.com/linux/chrome/deb stable InRelease
+Hit:2 https://us-central1-apt.pkg.dev/projects/antigravity-auto-updater-dev antigravity-debian InRelease
+Hit:3 http://apt.pop-os.org/proprietary noble InRelease

@@ -22,9 +22,9 @@ def create_sample_test(apps, schema_editor):
         return
 
     Test.objects.create(
-        title="Free Sample IQ Test",
+        name="Free Sample IQ Test",
         description="A quick 10-minute assessment to gauge your IQ level. Try it now for free!",
-        category="general",
+        category="verbal",
         duration_minutes=10,
         price=0.00,
         is_active=True,
