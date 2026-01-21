@@ -18,7 +18,7 @@ if '*.onrender.com' in ALLOWED_HOSTS:
 DATABASES = {
     'default': dj_database_url.config(
         default=config('DATABASE_URL'),
-        conn_max_age=0,
+        conn_max_age=60,
     )
 }
 
@@ -39,9 +39,8 @@ if platform.system() == 'Linux':
     # tcp_user_timeout is in milliseconds (30 seconds)
     DATABASES['default']['OPTIONS']['tcp_user_timeout'] = 30000
 
-# Disable server-side cursors for Supabase Transaction Pooler (PgBouncer/Supavisor) compatibility
-# Still beneficial in Session mode for some configurations.
-DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
+# Override port to 5432 (Session Mode) as Transaction Mode (6543) is causing deadlocks.
+DATABASES['default']['PORT'] = '5432'
 
 # Security settings for production
 SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
