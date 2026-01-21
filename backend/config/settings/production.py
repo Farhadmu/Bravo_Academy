@@ -95,8 +95,12 @@ if all([AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_STORAGE_BUCKET_NAME, AWS_S
     
     # Construct the Custom Domain for Supabase Public Storage
     # Format: [project-id].supabase.co/storage/v1/object/public/[bucket]
-    if '.storage.supabase.co' in AWS_S3_ENDPOINT_URL:
-        project_id = AWS_S3_ENDPOINT_URL.split('//')[1].split('.')[0]
+    if '.supabase.co' in AWS_S3_ENDPOINT_URL:
+        # Extract project_id carefully from different formats:
+        # 1. https://[project-id].storage.supabase.co
+        # 2. https://[project-id].supabase.co
+        host = AWS_S3_ENDPOINT_URL.split('//')[1].split('/')[0]
+        project_id = host.split('.')[0]
         AWS_S3_CUSTOM_DOMAIN = f"{project_id}.supabase.co/storage/v1/object/public/{AWS_STORAGE_BUCKET_NAME}"
     else:
         AWS_S3_CUSTOM_DOMAIN = config('AWS_S3_CUSTOM_DOMAIN', default=None)
