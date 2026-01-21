@@ -89,11 +89,11 @@ if all([AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_STORAGE_BUCKET_NAME, AWS_S
     AWS_S3_ADDRESSING_STYLE = 'path'
     
     # Supabase Professional Optimization:
-    # We use Public URLs (no signature) for the media bucket as it's more reliable for IQ tests.
     AWS_QUERYSTRING_AUTH = config('AWS_QUERYSTRING_AUTH', default=False, cast=bool)
     
     # Construct the Custom Domain for Supabase Public Storage
     if '.supabase.co' in AWS_S3_ENDPOINT_URL:
+        # Extract project_id carefully from different formats:
         host = AWS_S3_ENDPOINT_URL.split('//')[1].split('/')[0]
         project_id = host.split('.')[0]
         AWS_S3_CUSTOM_DOMAIN = f"{project_id}.supabase.co/storage/v1/object/public/{AWS_STORAGE_BUCKET_NAME}"
@@ -101,19 +101,9 @@ if all([AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_STORAGE_BUCKET_NAME, AWS_S
         AWS_S3_CUSTOM_DOMAIN = config('AWS_S3_CUSTOM_DOMAIN', default=None)
     
     AWS_S3_FILE_OVERWRITE = False
-    AWS_DEFAULT_ACL = None 
+    AWS_DEFAULT_ACL = None # Supabase handles ACLs via bucket settings
 else:
-    # Diagnostic Logging to find the missing variable
-    import sys
-    missing_vars = []
-    if not AWS_ACCESS_KEY_ID: missing_vars.append('AWS_ACCESS_KEY_ID')
-    if not AWS_SECRET_ACCESS_KEY: missing_vars.append('AWS_SECRET_ACCESS_KEY')
-    if not AWS_STORAGE_BUCKET_NAME: missing_vars.append('AWS_STORAGE_BUCKET_NAME')
-    if not AWS_S3_ENDPOINT_URL: missing_vars.append('AWS_S3_ENDPOINT_URL')
-    
-    logger.error(f"CRITICAL: Missing S3 Credentials! Falling back to BROKEN local storage. Missing: {', '.join(missing_vars)}")
-    # We intentionally DO NOT fallback to FileSystemStorage for now to see the error in logs, 
-    # but for stability, we essentially default to it but with a loud error.
+    # Fallback to local storage if S3 not configured
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 # Email backend (configure with actual email service)
