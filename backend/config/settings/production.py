@@ -79,16 +79,28 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # Supabase Storage (S3 Compatible) Configuration
 AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID', default=None)
 AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default=None)
-AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME', default=None)
+AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME', default='media')
 AWS_S3_ENDPOINT_URL = config('AWS_S3_ENDPOINT_URL', default=None)
 AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME', default='ap-south-1')
-AWS_S3_CUSTOM_DOMAIN = config('AWS_S3_CUSTOM_DOMAIN', default=None)
 
 if all([AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_STORAGE_BUCKET_NAME, AWS_S3_ENDPOINT_URL]):
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
     AWS_S3_SIGNATURE_VERSION = 's3v4'
     AWS_S3_ADDRESSING_STYLE = 'path'
-    AWS_QUERYSTRING_AUTH = True  # Set to False if the bucket is public
+    
+    # Supabase Professional Optimization:
+    # We use Public URLs (no signature) for the media bucket as it's more reliable for IQ tests.
+    # Set this to False if your Supabase bucket is 'Public'.
+    AWS_QUERYSTRING_AUTH = config('AWS_QUERYSTRING_AUTH', default=False, cast=bool)
+    
+    # Construct the Custom Domain for Supabase Public Storage
+    # Format: [project-id].supabase.co/storage/v1/object/public/[bucket]
+    if '.storage.supabase.co' in AWS_S3_ENDPOINT_URL:
+        project_id = AWS_S3_ENDPOINT_URL.split('//')[1].split('.')[0]
+        AWS_S3_CUSTOM_DOMAIN = f"{project_id}.supabase.co/storage/v1/object/public/{AWS_STORAGE_BUCKET_NAME}"
+    else:
+        AWS_S3_CUSTOM_DOMAIN = config('AWS_S3_CUSTOM_DOMAIN', default=None)
+    
     AWS_S3_FILE_OVERWRITE = False
     AWS_DEFAULT_ACL = None # Supabase handles ACLs via bucket settings
 else:
