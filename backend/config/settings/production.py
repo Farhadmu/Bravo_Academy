@@ -46,19 +46,24 @@ DATABASES['default']['PORT'] = '5432'
 DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = False # Direct connection supports cursors
 
 # EXTRACT PROJECT ID & OVERRIDE HOST
-# We use the S3 Endpoint to find the Project ID because Render doesn't expose it directly.
-s3_endpoint = config('AWS_S3_ENDPOINT_URL', default=None)
-if s3_endpoint and '.supabase.co' in s3_endpoint:
-    try:
-        # Format: https://[project_id].supabase.co/storage/v1/s3
+# We iterate to find the Project ID because Render doesn't expose it directly.
+s3_endpoint = config('AWS_S3_ENDPOINT_URL', default='https://jjxusciiuvcjltkreozq.supabase.co')
+try:
+    if '.supabase.co' in s3_endpoint:
+        # Format: https://[project_id].supabase.co
         host_part = s3_endpoint.split('//')[1].split('/')[0]
         project_id = host_part.split('.')[0]
-        
-        # Override the HOST to point directly to the DB, bypassing the Pooler DNS
-        DATABASES['default']['HOST'] = f"db.{project_id}.supabase.co"
-        print(f"✅ [Production] Switched to Direct DB Connection: {DATABASES['default']['HOST']}")
-    except Exception as e:
-        print(f"⚠️ [Production] Failed to derive Direct DB Host: {e}")
+    else:
+        # Fallback to hardcoded ID found in serializer if env var missing
+        project_id = 'jjxusciiuvcjltkreozq'
+    
+    # Override the HOST to point directly to the DB, bypassing the Pooler DNS
+    DATABASES['default']['HOST'] = f"db.{project_id}.supabase.co"
+    print(f"✅ [Production] Switched to Direct DB Connection: {DATABASES['default']['HOST']}")
+except Exception as e:
+    print(f"⚠️ [Production] Failed to derive Direct DB Host: {e}")
+    # Last ditch fallback
+    DATABASES['default']['HOST'] = "db.jjxusciiuvcjltkreozq.supabase.co"
 
 # Security settings for production
 SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
