@@ -197,6 +197,7 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'user_id',
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
     'TOKEN_TYPE_CLAIM': 'token_type',
+    'AUTH_COOKIE_REFRESH': 'refresh_token',  # Cookie name for refresh token
 }
 
 # CORS settings
