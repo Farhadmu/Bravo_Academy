@@ -12,34 +12,24 @@ if '*.onrender.com' in ALLOWED_HOSTS:
     # But usually, you just trust the onrender.com subdomain
     CSRF_TRUSTED_ORIGINS.append("https://*.onrender.com")
 
-# DATABASE CONFIGURATION (Supabase Professional Stability Fixes)
-# Using Port 5432 (Session Mode Pooler) for full feature compatibility.
+# DATABASE CONFIGURATION (Supabase High-Latency Stability Fix)
+# Using Port 6543 (Transaction Mode) - Lightweight and scalable.
+# We explicitly DISABLE server-side cursors for compatibility.
 DATABASES = {
     'default': dj_database_url.config(
         default=config('DATABASE_URL'),
-        conn_max_age=10, # Keep connections alive for 10s to reduce TLS overhead
+        conn_max_age=0, # Disable pooling to prevent 'stale' transaction errors
     )
 }
 
-# Essential PostgreSQL Options for Supabase Pooler
+# Essential PostgreSQL Options for Supabase Transaction Pooler
 DATABASES['default']['OPTIONS'] = {
     'sslmode': 'require',
-    'connect_timeout': 60, # High timeout for cold-start pooler wake-ups
-    # TCP Keepalives to prevent silent connection drops
-    'keepalives': 1,
-    'keepalives_idle': 20, # Drop idle connections faster
-    'keepalives_interval': 5,
-    'keepalives_count': 3,
+    'connect_timeout': 30, 
 }
 
-# Add TCP User Timeout (Linux specific) to drop dead connections faster
-import platform
-if platform.system() == 'Linux':
-    # tcp_user_timeout is in milliseconds (30 seconds)
-    DATABASES['default']['OPTIONS']['tcp_user_timeout'] = 30000
-
-# ENABLE server-side cursors for Session Mode compatibility
-DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = False
+# DISABLE server-side cursors - REQUIRED for Transaction Mode (Port 6543)
+DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
 
 # Security settings for production
 SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
