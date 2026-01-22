@@ -15,17 +15,20 @@ if '*.onrender.com' in ALLOWED_HOSTS:
 # DATABASE CONFIGURATION (Supabase Professional Stability Fixes)
 # Using CONN_MAX_AGE=60 to reuse connections and reduce TLS handshake overhead.
 # This works for both Direct Connections and Poolers.
+# DATABASE CONFIGURATION (Supabase Professional Stability Fixes)
+# We use Port 6543 (Transaction Mode) from Render's DATABASE_URL.
+# For Transaction Mode, conn_max_age MUST be 0 and cursors disabled.
 DATABASES = {
     'default': dj_database_url.config(
         default=config('DATABASE_URL'),
-        conn_max_age=0,  # Transaction Mode requires 0
+        conn_max_age=0,
     )
 }
 
-# Essential PostgreSQL Options for Supabase (Direct or Pooler)
+# Essential PostgreSQL Options for Supabase Pooler
 DATABASES['default']['OPTIONS'] = {
     'sslmode': 'require',
-    'connect_timeout': 30,
+    'connect_timeout': 60, # Increased timeout for cold-start pooler wake-ups
     # TCP Keepalives to prevent silent connection drops
     'keepalives': 1,
     'keepalives_idle': 30,
@@ -39,31 +42,9 @@ if platform.system() == 'Linux':
     # tcp_user_timeout is in milliseconds (30 seconds)
     DATABASES['default']['OPTIONS']['tcp_user_timeout'] = 30000
 
-# Override port to 5432 (Direct Connection)
-# Transaction Mode (6543) and Session Pooler (5432-Pooler) both timed out.
-# Pivoting to Direct Connection (db.project.supabase.co) to bypass Pooler entirely.
-DATABASES['default']['PORT'] = '5432'
-DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = False # Direct connection supports cursors
-
-# EXTRACT PROJECT ID & OVERRIDE HOST
-# We iterate to find the Project ID because Render doesn't expose it directly.
-s3_endpoint = config('AWS_S3_ENDPOINT_URL', default='https://jjxusciiuvcjltkreozq.supabase.co')
-try:
-    if '.supabase.co' in s3_endpoint:
-        # Format: https://[project_id].supabase.co
-        host_part = s3_endpoint.split('//')[1].split('/')[0]
-        project_id = host_part.split('.')[0]
-    else:
-        # Fallback to hardcoded ID found in serializer if env var missing
-        project_id = 'jjxusciiuvcjltkreozq'
-    
-    # Override the HOST to point directly to the DB, bypassing the Pooler DNS
-    DATABASES['default']['HOST'] = f"db.{project_id}.supabase.co"
-    print(f"✅ [Production] Switched to Direct DB Connection: {DATABASES['default']['HOST']}")
-except Exception as e:
-    print(f"⚠️ [Production] Failed to derive Direct DB Host: {e}")
-    # Last ditch fallback
-    DATABASES['default']['HOST'] = "db.jjxusciiuvcjltkreozq.supabase.co"
+# Disable server-side cursors for Supabase Transaction Pooler (6543) compatibility
+# This is CRITICAL when using Port 6543
+DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
 
 # Security settings for production
 SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
