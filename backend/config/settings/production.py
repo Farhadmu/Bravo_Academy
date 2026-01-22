@@ -39,11 +39,26 @@ if platform.system() == 'Linux':
     # tcp_user_timeout is in milliseconds (30 seconds)
     DATABASES['default']['OPTIONS']['tcp_user_timeout'] = 30000
 
-# Disable server-side cursors for Supabase Transaction Pooler (6543) compatibility
-DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
+# Override port to 5432 (Direct Connection)
+# Transaction Mode (6543) and Session Pooler (5432-Pooler) both timed out.
+# Pivoting to Direct Connection (db.project.supabase.co) to bypass Pooler entirely.
+DATABASES['default']['PORT'] = '5432'
+DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = False # Direct connection supports cursors
 
-# Override port to 6543 (Transaction Mode)
-DATABASES['default']['PORT'] = '6543'
+# EXTRACT PROJECT ID & OVERRIDE HOST
+# We use the S3 Endpoint to find the Project ID because Render doesn't expose it directly.
+s3_endpoint = config('AWS_S3_ENDPOINT_URL', default=None)
+if s3_endpoint and '.supabase.co' in s3_endpoint:
+    try:
+        # Format: https://[project_id].supabase.co/storage/v1/s3
+        host_part = s3_endpoint.split('//')[1].split('/')[0]
+        project_id = host_part.split('.')[0]
+        
+        # Override the HOST to point directly to the DB, bypassing the Pooler DNS
+        DATABASES['default']['HOST'] = f"db.{project_id}.supabase.co"
+        print(f"✅ [Production] Switched to Direct DB Connection: {DATABASES['default']['HOST']}")
+    except Exception as e:
+        print(f"⚠️ [Production] Failed to derive Direct DB Host: {e}")
 
 # Security settings for production
 SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
