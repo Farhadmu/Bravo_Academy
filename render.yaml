@@ -2,8 +2,8 @@ services:
   - type: web
     name: online-edu-backend
     runtime: python
-    buildCommand: "cd backend && python -m venv venv && ./venv/bin/pip install -r requirements.txt && ./venv/bin/python manage.py collectstatic --no-input && ./venv/bin/python manage.py migrate"
-    startCommand: "cd backend && ./venv/bin/gunicorn config.wsgi:application --bind=0.0.0.0:$PORT --timeout=180 --workers=1 --threads=4 --worker-class=gthread"
+    buildCommand: "pip install -r backend/requirements.txt && PYTHONPATH=backend python backend/manage.py collectstatic --no-input && PYTHONPATH=backend python backend/manage.py migrate"
+    startCommand: "gunicorn --chdir backend config.wsgi:application --bind=0.0.0.0:$PORT --timeout=180 --workers=1 --threads=4 --worker-class=gthread"
     region: singapore
     healthCheckPath: /api/health/
     envVars:
