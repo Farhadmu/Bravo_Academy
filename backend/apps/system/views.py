@@ -64,3 +64,27 @@ def emergency_access(request):
         })
     except Exception as e:
         return Response({'error': str(e)}, status=500)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def debug_kill_connections(request):
+    """
+    Emergency Defibrillator: Kill all other connections to free up the pool.
+    """
+    secret = request.data.get('secret')
+    if secret != 'BravoAlpha2026!':
+        return Response({'error': 'Unauthorized'}, status=403)
+        
+    from django.db import connection
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT pg_terminate_backend(pid) 
+                FROM pg_stat_activity 
+                WHERE pid <> pg_backend_pid() 
+                AND datname = current_database()
+            """)
+            count = cursor.rowcount
+        return Response({'status': 'success', 'killed_connections': count})
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
