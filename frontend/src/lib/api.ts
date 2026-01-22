@@ -2,8 +2,16 @@ import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
 
 // Create generic axios instance
 const getBaseURL = () => {
-    // CRITICAL: Use environment variable first, fallback to localhost for local dev only
-    let url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+    // CRITICAL: Use environment variable first, fallback to Singapore for production visibility
+    let url = process.env.NEXT_PUBLIC_API_URL || 'https://online-education-platform-fypx.onrender.com/api';
+
+    // Diagnostic logging for the user to see in their browser console
+    if (typeof window !== 'undefined') {
+        console.log(`%c[NETWORK] Connected to: ${url}`, 'color: #00ff00; font-weight: bold;');
+        if (url.includes('tdc4.onrender.com')) {
+            console.error('[WARNING] Browser is still hitting OLD Oregon server!');
+        }
+    }
 
     // Normalize: remove trailing slash
     url = url.replace(/\/$/, '');
