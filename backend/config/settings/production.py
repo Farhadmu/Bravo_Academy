@@ -13,23 +13,22 @@ if '*.onrender.com' in ALLOWED_HOSTS:
     CSRF_TRUSTED_ORIGINS.append("https://*.onrender.com")
 
 # DATABASE CONFIGURATION (Supabase High-Latency Stability Fix)
-# Using Port 6543 (Transaction Mode) - Lightweight and scalable.
-# We explicitly DISABLE server-side cursors for compatibility.
+# Using Port 5432 (Session Mode) with Pooling DISABLED for maximum reliability.
 DATABASES = {
     'default': dj_database_url.config(
         default=config('DATABASE_URL'),
-        conn_max_age=0, # Disable pooling to prevent 'stale' transaction errors
+        conn_max_age=0, # Disable pooling for high-latency Oregon-Mumbai stability
     )
 }
 
-# Essential PostgreSQL Options for Supabase Transaction Pooler
+# Essential PostgreSQL Options for Supabase Session Pooler
 DATABASES['default']['OPTIONS'] = {
     'sslmode': 'require',
-    'connect_timeout': 30, 
+    'connect_timeout': 60, # High timeout for network reliability
 }
 
-# DISABLE server-side cursors - REQUIRED for Transaction Mode (Port 6543)
-DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
+# ENABLE server-side cursors - Required for Port 5432 (Session Mode)
+DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = False
 
 # Security settings for production
 SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
