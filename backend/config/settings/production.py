@@ -1,7 +1,8 @@
-"""
-Production settings for Defense Coaching Center & IQ Test Platform.
-"""
+import logging
+import platform
 from .base import *
+
+logger = logging.getLogger(__name__)
 
 DEBUG = False
 
