@@ -13,21 +13,17 @@ if '*.onrender.com' in ALLOWED_HOSTS:
     CSRF_TRUSTED_ORIGINS.append("https://*.onrender.com")
 
 # DATABASE CONFIGURATION (Supabase High-Latency Stability Fix)
-# Using Port 5432 (Session Mode) with Pooling DISABLED for maximum reliability.
 DATABASES = {
     'default': dj_database_url.config(
         default=config('DATABASE_URL'),
-        conn_max_age=0, # Disable pooling for high-latency Oregon-Mumbai stability
+        conn_max_age=0,
     )
 }
-
-# Essential PostgreSQL Options for Supabase Session Pooler
-DATABASES['default']['OPTIONS'] = {
+DATABASES['default'].setdefault('OPTIONS', {})
+DATABASES['default']['OPTIONS'].update({
     'sslmode': 'require',
-    'connect_timeout': 60, # High timeout for network reliability
-}
-
-# ENABLE server-side cursors - Required for Port 5432 (Session Mode)
+    'connect_timeout': 60,
+})
 DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = False
 
 # Security settings for production
@@ -71,7 +67,14 @@ AWS_S3_ENDPOINT_URL = config('AWS_S3_ENDPOINT_URL', default=None)
 AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME', default='ap-south-1')
 
 if all([AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_STORAGE_BUCKET_NAME, AWS_S3_ENDPOINT_URL]):
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        }
+    }
     AWS_S3_SIGNATURE_VERSION = 's3v4'
     AWS_S3_ADDRESSING_STYLE = 'path'
     
