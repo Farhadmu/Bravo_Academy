@@ -69,7 +69,6 @@ urlpatterns = [
     
     # API endpoints
     path('api/auth/', include('apps.users.urls')),
-    path('api/system/', include('apps.system.urls')),
     path('api/tests/', include('apps.tests.urls')),
     path('api/questions/', include('apps.questions.urls')),
     path('api/results/', include('apps.results.urls')),

@@ -36,36 +36,16 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
     
     def post(self, request, *args, **kwargs):
-        username = request.data.get('username')
-        
         try:
-            response = super().post(request, *args, **kwargs)
-            return response
+            return super().post(request, *args, **kwargs)
         except Exception as e:
-            # Log the full error for internal debugging if needed
+            username = request.data.get('username')
             logger.warning(f"Login failed for user '{username}': {str(e)}")
             
-            # Provide user-friendly error messages instead of 500 crashes
-            if username:
-                try:
-                    user_exists = User.objects.filter(username=username).exists()
-                    if user_exists:
-                        return Response({
-                            'error': 'Incorrect Password',
-                            'detail': 'The password you entered is incorrect. Please try again.'
-                        }, status=status.HTTP_401_UNAUTHORIZED)
-                    else:
-                        return Response({
-                            'error': 'User Not Found',
-                            'detail': f'No account found with the username "{username}". Please check for typos.'
-                        }, status=status.HTTP_401_UNAUTHORIZED)
-                except Exception as db_err:
-                    logger.error(f"Database error during login failure analysis: {str(db_err)}")
-            
-            # Fallback for unexpected errors
+            # Optimized: Generic but helpful error to reduce DB roundtrips over high-latency
             return Response({
                 'error': 'Authentication Failed',
-                'detail': 'Unable to log in with provided credentials.'
+                'detail': 'Invalid username or password. Please try again.'
             }, status=status.HTTP_401_UNAUTHORIZED)
 
 

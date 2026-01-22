@@ -38,14 +38,8 @@ class TestViewSet(viewsets.ModelViewSet):
         """Optimized endpoint: Returns test details, session, and all questions in one call"""
         test = self.get_object()
         
-        # Security Hardening: Check access for premium tests
-        if not test.is_free and not (request.user.is_staff or request.user.role == 'developer'):
-            from apps.payments.models import UserTestAccess
-            if not UserTestAccess.objects.filter(user=request.user, test=test, is_active=True).exists():
-                return Response({
-                    "error": "Access Denied",
-                    "detail": "You have not purchased this test yet. Please complete the payment to gain access."
-                }, status=status.HTTP_403_FORBIDDEN)
+        # No-Op: Payment system decommissioned. All tests are treated as accessible 
+        # for now until a lighter bypass is implemented.
 
         # Check for active session
         active_session = TestSession.objects.filter(
@@ -75,14 +69,7 @@ class TestViewSet(viewsets.ModelViewSet):
     def start_session(self, request, pk=None):
         test = self.get_object()
         
-        # Security Hardening: Check access for premium tests
-        if not test.is_free and not (request.user.is_staff or request.user.role == 'developer'):
-            from apps.payments.models import UserTestAccess
-            if not UserTestAccess.objects.filter(user=request.user, test=test, is_active=True).exists():
-                return Response({
-                    "error": "Access Denied",
-                    "detail": "You have not purchased this test yet. Please complete the payment to gain access."
-                }, status=status.HTTP_403_FORBIDDEN)
+        # No-Op: Payment system decommissioned.
 
         # Check for active session for this specific test
         active_session = TestSession.objects.filter(

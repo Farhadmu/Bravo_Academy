@@ -59,7 +59,6 @@ LOCAL_APPS = [
     'apps.tests',
     'apps.questions',
     'apps.results',
-    'apps.system',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -129,11 +128,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Password hashers - Supporting both Argon2 (existing) and PBKDF2
+# Password hashers - Optimized for high-latency production (PBKDF2 is faster than Argon2)
 PASSWORD_HASHERS = [
-    'django.contrib.auth.hashers.Argon2PasswordHasher',
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
     'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
 ]
 
 # Internationalization
@@ -188,7 +187,7 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(minutes=config('JWT_REFRESH_TOKEN_LIFETIME', default=10080, cast=int)),  # 7 days
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
-    'UPDATE_LAST_LOGIN': True,
+    'UPDATE_LAST_LOGIN': False, # Optimized: Save 1 DB write per session establisment
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
     'VERIFYING_KEY': None,
@@ -243,6 +242,6 @@ FREE_SAMPLE_TEST_QUESTIONS = 20
 PAID_TEST_QUESTIONS = 100
 DEFAULT_TEST_DURATION_MINUTES = 30
 
-# Device tracking for preventing multi-device login
-ENFORCE_SINGLE_DEVICE = True
+# Device tracking for preventing multi-device login (Disabled to reduce DB overhead)
+ENFORCE_SINGLE_DEVICE = False
 DEVICE_FINGERPRINT_SALT = SECRET_KEY
