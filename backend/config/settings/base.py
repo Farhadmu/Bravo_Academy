@@ -48,6 +48,7 @@ THIRD_PARTY_APPS = [
     'corsheaders',
     'django_filters',
     'drf_spectacular',
+    'storages',
 ]
 
 if DEBUG:
