@@ -13,17 +13,29 @@ if '*.onrender.com' in ALLOWED_HOSTS:
     # But usually, you just trust the onrender.com subdomain
     CSRF_TRUSTED_ORIGINS.append("https://*.onrender.com")
 
-# DATABASE CONFIGURATION (Supabase High-Latency Stability Fix)
+# DATABASE CONFIGURATION (High-Latency Resiliency Armor)
 DATABASES = {
     'default': dj_database_url.config(
         default=config('DATABASE_URL'),
-        conn_max_age=0,
+        conn_max_age=config('CONN_MAX_AGE', default=60, cast=int), # Persistent connections to avoid handshake tax
     )
 }
+
 DATABASES['default'].setdefault('OPTIONS', {})
 DATABASES['default']['OPTIONS'].update({
     'sslmode': 'require',
     'connect_timeout': 60,
+    # TCP Keepalive Tuning (Detect dead connections over long RTT)
+    'keepalives': 1,
+    'keepalives_idle': 30,
+    'keepalives_interval': 10,
+    'keepalives_count': 5,
+    # Fail-Fast Timeouts
+    'tcp_user_timeout': 30000, # 30s
+    'options': '-c statement_timeout=60000', # 60s
+    # Disable unneeded auth negotiation
+    'gssencmode': 'disable',
+    'channel_binding': 'disable',
 })
 DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = False
 
