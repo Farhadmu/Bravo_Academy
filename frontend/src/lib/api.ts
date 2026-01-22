@@ -2,13 +2,13 @@ import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
 
 // Create generic axios instance
 const getBaseURL = () => {
-    let url = process.env.NEXT_PUBLIC_API_URL || 'https://online-education-platform-tdc4.onrender.com/api';
+    // CRITICAL: Use environment variable first, fallback to localhost for local dev only
+    let url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
     // Normalize: remove trailing slash
     url = url.replace(/\/$/, '');
 
     // Ensure URL always has /api suffix if missing
-    // We check if it already ends with /api or includes /api/ to avoid double appending
     if (!url.endsWith('/api') && !url.includes('/api/')) {
         url = url + '/api';
     }
@@ -93,7 +93,7 @@ api.interceptors.response.use(
                 // Try to refresh token
                 // We don't necessarily need to send 'refresh' in body anymore as it is in cookies,
                 // but the backend view CookieTokenRefreshView handles both for compatibility.
-                const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/auth/refresh/`, {}, {
+                const response = await axios.post(`${getBaseURL()}/auth/refresh/`, {}, {
                     withCredentials: true
                 });
 
