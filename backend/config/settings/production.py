@@ -18,7 +18,7 @@ if '*.onrender.com' in ALLOWED_HOSTS:
 DATABASES = {
     'default': dj_database_url.config(
         default=config('DATABASE_URL'),
-        conn_max_age=0,  # Disable persistent connections to avoid Supabase Pooler timeouts
+        conn_max_age=0,  # Transaction Mode requires 0
     )
 }
 
@@ -39,8 +39,11 @@ if platform.system() == 'Linux':
     # tcp_user_timeout is in milliseconds (30 seconds)
     DATABASES['default']['OPTIONS']['tcp_user_timeout'] = 30000
 
-# Override port to 5432 (Session Mode) as Transaction Mode (6543) is causing deadlocks.
-DATABASES['default']['PORT'] = '5432'
+# Disable server-side cursors for Supabase Transaction Pooler (6543) compatibility
+DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
+
+# Override port to 6543 (Transaction Mode)
+DATABASES['default']['PORT'] = '6543'
 
 # Security settings for production
 SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
