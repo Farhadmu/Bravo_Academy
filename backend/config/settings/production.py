@@ -18,7 +18,7 @@ if '*.onrender.com' in ALLOWED_HOSTS:
 DATABASES = {
     'default': dj_database_url.config(
         default=config('DATABASE_URL'),
-        conn_max_age=0,  # Disable persistent connections to avoid Supabase Pooler timeouts
+        conn_max_age=60,
     )
 }
 
