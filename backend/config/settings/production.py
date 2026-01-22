@@ -13,27 +13,23 @@ if '*.onrender.com' in ALLOWED_HOSTS:
     CSRF_TRUSTED_ORIGINS.append("https://*.onrender.com")
 
 # DATABASE CONFIGURATION (Supabase Professional Stability Fixes)
-# Using CONN_MAX_AGE=60 to reuse connections and reduce TLS handshake overhead.
-# This works for both Direct Connections and Poolers.
-# DATABASE CONFIGURATION (Supabase Professional Stability Fixes)
-# We use Port 6543 (Transaction Mode) from Render's DATABASE_URL.
-# For Transaction Mode, conn_max_age MUST be 0 and cursors disabled.
+# Using Port 5432 (Session Mode Pooler) for full feature compatibility.
 DATABASES = {
     'default': dj_database_url.config(
         default=config('DATABASE_URL'),
-        conn_max_age=0,
+        conn_max_age=10, # Keep connections alive for 10s to reduce TLS overhead
     )
 }
 
 # Essential PostgreSQL Options for Supabase Pooler
 DATABASES['default']['OPTIONS'] = {
     'sslmode': 'require',
-    'connect_timeout': 60, # Increased timeout for cold-start pooler wake-ups
+    'connect_timeout': 60, # High timeout for cold-start pooler wake-ups
     # TCP Keepalives to prevent silent connection drops
     'keepalives': 1,
-    'keepalives_idle': 30,
-    'keepalives_interval': 10,
-    'keepalives_count': 5,
+    'keepalives_idle': 20, # Drop idle connections faster
+    'keepalives_interval': 5,
+    'keepalives_count': 3,
 }
 
 # Add TCP User Timeout (Linux specific) to drop dead connections faster
@@ -42,9 +38,8 @@ if platform.system() == 'Linux':
     # tcp_user_timeout is in milliseconds (30 seconds)
     DATABASES['default']['OPTIONS']['tcp_user_timeout'] = 30000
 
-# Disable server-side cursors for Supabase Transaction Pooler (6543) compatibility
-# This is CRITICAL when using Port 6543
-DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
+# ENABLE server-side cursors for Session Mode compatibility
+DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = False
 
 # Security settings for production
 SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
