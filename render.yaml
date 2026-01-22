@@ -3,8 +3,8 @@ services:
     name: online-edu-backend
     runtime: python
     rootDir: backend
-    buildCommand: "bash ./scripts/render_build.sh"
-    startCommand: "./venv/bin/gunicorn config.wsgi:application --bind=0.0.0.0:$PORT --timeout=180 --workers=1 --threads=4 --worker-class=gthread"
+    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate"
+    startCommand: "gunicorn config.wsgi:application --bind=0.0.0.0:$PORT --timeout=180 --workers=1 --threads=4 --worker-class=gthread"
     region: singapore
     healthCheckPath: /api/health/
     envVars:
