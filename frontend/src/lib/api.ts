@@ -71,18 +71,18 @@ api.interceptors.request.use(
                 const isRegister = config.url?.includes('/auth/register/');
                 const isSample = config.url?.includes('/public_questions/');
 
-                let title = 'System is Waking Up...';
-                let desc = 'Our Singapore backend is spinning up from sleep mode. This usually takes 30-50 seconds. Please stay with us!';
+                let title = 'Initializing Secure Environment...';
+                let desc = 'The platform is preparing your secure session. This initial process ensures optimal performance and security. Thank you for your patience.';
 
                 if (isAuth) {
-                    title = 'Authenticating & Waking Server...';
-                    desc = 'Verifying your credentials and waking up the Singapore backend. This takes a few moments on the first load.';
+                    title = 'Accessing Secure Gateway...';
+                    desc = 'Initializing authentication services and secure session protocols. This one-time setup ensures a high-performance experience once logged in.';
                 } else if (isRegister) {
-                    title = 'Accessing Registration Portal...';
-                    desc = 'Waking up the verification system. Please wait a moment.';
+                    title = 'Loading Enrollment Portal...';
+                    desc = 'Accessing registration resources and secure verification modules. Please wait a moment while the environment initializes.';
                 } else if (isSample) {
-                    title = 'Preparing Your Sample Test...';
-                    desc = 'Loading expert questions and waking the test engine. This will only take a moment.';
+                    title = 'Optimizing Test Resources...';
+                    desc = 'Loading practice modules and analytical engines. This process ensures a seamless and responsive experience during your session.';
                 }
 
                 toast.info(title, {
