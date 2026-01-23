@@ -111,18 +111,11 @@ export default function SampleTestPage() {
         }
 
         setLoading(true);
-        const timer = setTimeout(() => {
-            const id = toast.info('Our server is waking up...', {
-                description: 'This is a free sample, but our backend still needs a moment to start. Thanks for your patience!',
-                duration: 10000,
-            });
-            setSlowLoadId(id);
-        }, 5000);
+        // Global cold-boot detection now handled in api.ts
 
         try {
             const res = await api.get(`/tests/tests/${testId}/public_questions/`);
 
-            clearTimeout(timer);
             if (slowLoadId) toast.dismiss(slowLoadId);
 
             setQuestions(res.data);
@@ -142,7 +135,6 @@ export default function SampleTestPage() {
 
             toast.success('Test started successfully!');
         } catch (err) {
-            clearTimeout(timer);
             if (slowLoadId) toast.dismiss(slowLoadId);
             console.error("Failed to load sample test:", err);
             setLoading(false);

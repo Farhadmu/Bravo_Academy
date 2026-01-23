@@ -64,15 +64,7 @@ export default function LoginPage() {
 
         setIsLoading(true)
 
-        // Setup cold-start timer
-        const timer = setTimeout(() => {
-            const id = toast.info('Our server is waking up...', {
-                description: 'It might take up to a minute to start the backend. Please stay with us!',
-                duration: 10000,
-                icon: <Info className="w-4 h-4" />
-            })
-            setSlowLoadId(id)
-        }, 5000)
+        // Global cold-boot detection now handled in api.ts
 
         try {
             const response = await api.post('/auth/login/', {
@@ -84,7 +76,6 @@ export default function LoginPage() {
 
             // Clear slow load toast if it exists
             if (slowLoadId) toast.dismiss(slowLoadId)
-            clearTimeout(timer)
 
             login(user, access, refresh)
             toast.success('Logged in successfully!')
@@ -97,7 +88,6 @@ export default function LoginPage() {
                 router.push('/dashboard')
             }
         } catch (err: any) {
-            clearTimeout(timer)
             if (slowLoadId) toast.dismiss(slowLoadId)
 
             let message = 'Login failed'
