@@ -1,4 +1,5 @@
-import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
+import { toast } from 'sonner';
 
 // Create generic axios instance
 const getBaseURL = () => {
@@ -41,9 +42,12 @@ const getCookie = (name: string): string | null => {
     return null;
 };
 
-// Request interceptor to add CSRF token
+// Track active timers to prevent toast storms
+const activeTimers = new Map<string, any>();
+
+// Request interceptor to add CSRF token and handle cold-starts
 api.interceptors.request.use(
-    (config) => {
+    (config: InternalAxiosRequestConfig) => {
         // Handle CSRF token
         const csrfToken = getCookie('csrftoken');
         if (csrfToken && config.headers) {
@@ -56,17 +60,66 @@ api.interceptors.request.use(
             config.headers.Authorization = `Bearer ${token}`;
         }
 
+        // GLOBAL COLD-BOOT DETECTION:
+        // Set a timer to show a "waking up" toast if the request takes > 3s
+        if (typeof window !== 'undefined' && config.method !== 'options') {
+            const requestId = Math.random().toString(36).substring(7);
+            (config as any).requestId = requestId;
+
+            const timer = setTimeout(() => {
+                const isAuth = config.url?.includes('/auth/login/');
+                const isRegister = config.url?.includes('/auth/register/');
+                const isSample = config.url?.includes('/public_questions/');
+
+                let title = 'System is Waking Up...';
+                let desc = 'Our Singapore backend is spinning up from sleep mode. This usually takes 30-50 seconds. Please stay with us!';
+
+                if (isAuth) {
+                    title = 'Authenticating & Waking Server...';
+                    desc = 'Verifying your credentials and waking up the Singapore backend. This takes a few moments on the first load.';
+                } else if (isRegister) {
+                    title = 'Accessing Registration Portal...';
+                    desc = 'Waking up the verification system. Please wait a moment.';
+                } else if (isSample) {
+                    title = 'Preparing Your Sample Test...';
+                    desc = 'Loading expert questions and waking the test engine. This will only take a moment.';
+                }
+
+                toast.info(title, {
+                    id: `cold-boot-${requestId}`,
+                    description: desc,
+                    duration: 15000,
+                });
+            }, 3000);
+
+            activeTimers.set(requestId, timer);
+        }
+
         return config;
     },
     (error) => Promise.reject(error)
 );
 
-// Response interceptor to handle token refresh
+// Response interceptor to handle token refresh and clear timers
 api.interceptors.response.use(
     (response) => {
+        // Clear cold-boot timer if request finished
+        const requestId = (response.config as any).requestId;
+        if (requestId && activeTimers.has(requestId)) {
+            clearTimeout(activeTimers.get(requestId));
+            activeTimers.delete(requestId);
+            toast.dismiss(`cold-boot-${requestId}`);
+        }
         return response;
     },
     async (error: AxiosError) => {
+        // Clear cold-boot timer on error too
+        const requestId = (error.config as any)?.requestId;
+        if (requestId && activeTimers.has(requestId)) {
+            clearTimeout(activeTimers.get(requestId));
+            activeTimers.delete(requestId);
+            toast.dismiss(`cold-boot-${requestId}`);
+        }
         const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
 
         // If error is 401 and we haven't retried yet
