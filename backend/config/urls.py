@@ -31,16 +31,18 @@ def health_check(request):
 def db_ping(request):
     """
     Database ping endpoint.
-    Verifies database connectivity.
+    Verifies database connectivity using the resilient Transaction Mode path.
     """
     from django.db import connection
     try:
+        # Standard Django connection check (respects settings.DATABASES)
         with connection.cursor() as cursor:
             cursor.execute("SELECT 1")
             row = cursor.fetchone()
             return Response({
                 'status': 'healthy',
                 'database': 'connected',
+                'mode': 'transaction_pooler',
                 'result': row[0]
             }, status=status.HTTP_200_OK)
     except Exception as e:
