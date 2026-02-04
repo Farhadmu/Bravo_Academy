@@ -8,7 +8,9 @@
 ![Stack](https://img.shields.io/badge/stack-Next.js%20%7C%20Django-black.svg?style=for-the-badge)
 
 
-**A high-performance, enterprise-grade adaptive testing & education platform designed for defense recruitment preparation.**
+**A high-performance, enterprise-grade adaptive testing &# Online Education Platform 🚀
+> **Latest Deployment Trigger:** Automated via GitHub Webhook (Scorecard Logic Restoration)
+ designed for defense recruitment preparation.**
 
 [Request Access](mailto:sakiburrahmannnn@gmail.com) (sakiburrahmannnn@gmail.com) • [Documentation](docs/PROJECT_AUDIT_REPORT.md) • [Report Bug](SECURITY.md)
 
