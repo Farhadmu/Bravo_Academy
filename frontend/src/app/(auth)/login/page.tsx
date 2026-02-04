@@ -72,12 +72,12 @@ export default function LoginPage() {
                 password: data.password,
             });
 
-            const { user, access, refresh } = response.data
+            const { user } = response.data
 
             // Clear slow load toast if it exists
             if (slowLoadId) toast.dismiss(slowLoadId)
 
-            login(user, access, refresh)
+            login(user)
             toast.success('Logged in successfully!')
 
             if (user.role === 'developer') {

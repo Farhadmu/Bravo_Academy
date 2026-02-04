@@ -54,11 +54,7 @@ api.interceptors.request.use(
             config.headers['X-CSRFToken'] = csrfToken;
         }
 
-        // Authorization header with Bearer token
-        const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-        if (token && !config.headers.Authorization) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
+        // GLOBAL COLD-BOOT DETECTION:
 
         // GLOBAL COLD-BOOT DETECTION:
         // Set a timer to show a "waking up" toast if the request takes > 3s
@@ -133,9 +129,7 @@ api.interceptors.response.use(
                 // User was logged out due to maintenance mode
                 if (typeof window !== 'undefined') {
                     const { useAuthStore } = await import('@/store/auth');
-                    localStorage.removeItem('accessToken');
-                    localStorage.removeItem('refreshToken');
-                    useAuthStore.setState({ user: null, accessToken: null, isAuthenticated: false });
+                    useAuthStore.setState({ user: null, isAuthenticated: false });
 
                     // Redirect to login with maintenance message
                     window.location.href = '/login';
@@ -146,38 +140,17 @@ api.interceptors.response.use(
             originalRequest._retry = true;
 
             try {
-                const refreshToken = localStorage.getItem('refreshToken');
-                if (!refreshToken) {
-                    throw new Error('No refresh token');
-                }
-
-                // Try to refresh token
-                // We don't necessarily need to send 'refresh' in body anymore as it is in cookies,
-                // but the backend view CookieTokenRefreshView handles both for compatibility.
-                const response = await axios.post(`${getBaseURL()}/auth/refresh/`, {}, {
+                // Try to refresh token using the HttpOnly cookie
+                await axios.post(`${getBaseURL()}/auth/refresh/`, {}, {
                     withCredentials: true
                 });
 
-                const { access } = response.data;
-                // We still update local storage/state for immediate UI responsiveness 
-                // until we fully migrate the auth store to be cookie-aware.
-                if (access) {
-                    localStorage.setItem('accessToken', access);
-                }
-
-                if (originalRequest.headers) {
-                    // Inject the new access token into the retried request
-                    // even though it's also in the cookie now
-                    originalRequest.headers.Authorization = `Bearer ${access}`;
-                }
-
+                // Retry original request (browser will now have the new cookie)
                 return api(originalRequest);
             } catch (refreshError) {
                 if (typeof window !== 'undefined') {
                     const { useAuthStore } = await import('@/store/auth');
-                    localStorage.removeItem('accessToken');
-                    localStorage.removeItem('refreshToken');
-                    useAuthStore.setState({ user: null, accessToken: null, isAuthenticated: false });
+                    useAuthStore.setState({ user: null, isAuthenticated: false });
 
                     // Only redirect if we're not already on the login page to avoid refresh loop
                     if (window.location.pathname !== '/login') {

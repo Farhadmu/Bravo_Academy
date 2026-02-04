@@ -176,9 +176,10 @@ class PerformanceAnalytics(models.Model):
         if first_question and first_question.question_type == 'wat':
             return
 
-        self.total_tests_taken += 1
+        from django.db.models import F
+        self.total_tests_taken = F('total_tests_taken') + 1
         if result.passed:
-            self.total_tests_passed += 1
+            self.total_tests_passed = F('total_tests_passed') + 1
         
         # Update average score - convert to Decimal for consistent math
         if self.total_tests_taken == 1:

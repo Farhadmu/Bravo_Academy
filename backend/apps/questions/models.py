@@ -115,27 +115,23 @@ class QuestionImage(models.Model):
 
 
 # Signals to keep test total_questions in sync
+from django.db.models import F
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
 @receiver(post_save, sender=Question)
-def update_test_question_count_on_save(sender, instance, **kwargs):
-    """Update the total_questions count on the parent Test (skip for banks)."""
-    test = instance.test
-    if test.is_bank:
-        return
-    actual_count = Question.objects.filter(test=test).count()
-    if test.total_questions != actual_count:
-        test.total_questions = actual_count
+def update_test_question_count_on_save(sender, instance, created, **kwargs):
+    """Update the total_questions count on the parent Test atomically (skip for banks)."""
+    if created and not instance.test.is_bank:
+        test = instance.test
+        test.total_questions = F('total_questions') + 1
         test.save(update_fields=['total_questions'])
 
 @receiver(post_delete, sender=Question)
 def update_test_question_count_on_delete(sender, instance, **kwargs):
-    """Update the total_questions count on the parent Test (skip for banks)."""
-    test = instance.test
-    if test.is_bank:
-        return
-    actual_count = Question.objects.filter(test=test).count()
-    if test.total_questions != actual_count:
-        test.total_questions = actual_count
+    """Update the total_questions count on the parent Test atomically (skip for banks)."""
+    if not instance.test.is_bank:
+        test = instance.test
+        # Ensure we don't go below 0
+        test.total_questions = F('total_questions') - 1
         test.save(update_fields=['total_questions'])

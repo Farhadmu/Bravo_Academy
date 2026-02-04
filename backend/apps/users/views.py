@@ -31,18 +31,44 @@ logger = logging.getLogger(__name__)
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     """
-    Simplified login view - standard JWT authentication.
+    Simplified login view - sets HttpOnly cookies for security.
     """
     serializer_class = CustomTokenObtainPairSerializer
     
     def post(self, request, *args, **kwargs):
         try:
-            return super().post(request, *args, **kwargs)
+            response = super().post(request, *args, **kwargs)
+            
+            if response.status_code == 200:
+                access_token = response.data.get('access')
+                refresh_token = response.data.get('refresh')
+                
+                if access_token:
+                    response.set_cookie(
+                        key=settings.SIMPLE_JWT['AUTH_COOKIE'],
+                        value=access_token,
+                        expires=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'],
+                        secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                        httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                        samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+                        path=settings.SIMPLE_JWT['AUTH_COOKIE_PATH'],
+                    )
+                
+                if refresh_token:
+                    response.set_cookie(
+                        key=settings.SIMPLE_JWT['AUTH_COOKIE_REFRESH'],
+                        value=refresh_token,
+                        expires=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'],
+                        secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                        httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                        samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+                        path=settings.SIMPLE_JWT['AUTH_COOKIE_PATH'],
+                    )
+            return response
         except Exception as e:
             username = request.data.get('username')
             logger.warning(f"Login failed for user '{username}': {str(e)}")
             
-            # Optimized: Generic but helpful error to reduce DB roundtrips over high-latency
             return Response({
                 'error': 'Authentication Failed',
                 'detail': 'Invalid username or password. Please try again.'
@@ -57,8 +83,6 @@ class CookieTokenRefreshView(TokenRefreshView):
         refresh_token = request.COOKIES.get(settings.SIMPLE_JWT['AUTH_COOKIE_REFRESH'])
         
         if refresh_token:
-            # Add to request data if it was in cookies
-            # Note: copy() is needed as request.data is immutable
             data = request.data.copy()
             data['refresh'] = refresh_token
             request._full_data = data
@@ -77,6 +101,7 @@ class CookieTokenRefreshView(TokenRefreshView):
                     secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
                     httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
                     samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+                    path=settings.SIMPLE_JWT['AUTH_COOKIE_PATH'],
                 )
             
             if refresh_token:
@@ -87,6 +112,7 @@ class CookieTokenRefreshView(TokenRefreshView):
                     secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
                     httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
                     samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+                    path=settings.SIMPLE_JWT['AUTH_COOKIE_PATH'],
                 )
                 
         return response
