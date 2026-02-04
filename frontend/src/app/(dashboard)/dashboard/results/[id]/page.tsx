@@ -70,12 +70,12 @@ export default function ResultDetailPage({ params }: { params: Promise<{ id: str
     const accuracy = parseFloat(result.accuracy || '0');
 
 
-    // WAT and Verbal View (Non-graded)
-    // Use test_category to properly distinguish between test types
-    const isNonGraded = result.question_type === 'wat';
+    // Only WAT tests use the non-graded view (no scorecard)
+    // Verbal and Non-Verbal tests should use the standard graded view
+    const isNonGraded = result.test_category === 'wat';
 
     if (isNonGraded) {
-        const title = result.question_type === 'wat' ? 'WAT Completed' : 'Verbal Test Completed';
+        const title = 'WAT Completed';
         const words = result.review_data?.map(item => item.question_text) || [];
 
         return (
