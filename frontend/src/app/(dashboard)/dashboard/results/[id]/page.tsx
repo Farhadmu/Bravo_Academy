@@ -72,7 +72,9 @@ export default function ResultDetailPage({ params }: { params: Promise<{ id: str
 
     // Only WAT tests use the non-graded view (no scorecard)
     // Verbal and Non-Verbal tests should use the standard graded view
-    const isNonGraded = result.test_category === 'wat';
+    // Defensive check: If test_category is missing, check the test name
+    const isNonGraded = result.test_category === 'wat' ||
+        (result.test_category === undefined && result.test_name.toLowerCase().includes('wat'));
 
     if (isNonGraded) {
         const title = 'WAT Completed';
