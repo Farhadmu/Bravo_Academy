@@ -1,3 +1,4 @@
+print("DEBUG: Script absolute start")
 import os
 import django
 import sys
@@ -7,8 +8,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
 sys.path.append(os.path.join(BASE_DIR, 'apps'))
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.development')
+print("DEBUG: Setting up Django...")
 django.setup()
+print("DEBUG: Django setup completed.")
 
 from apps.tests.models import Test
 from apps.questions.models import Question
@@ -17,8 +19,7 @@ from apps.users.models import User
 def seed_data():
     print("Starting comprehensive data seeding...")
     
-    # 1. Cleanup: Delete all other tests unless it's Set 1
-    Test.objects.exclude(name="IQ Test - Set 1").delete()
+    # 1. Cleanup: (REMOVED dangerous Test.objects.delete() call for production)
     print("Cleaned up dummy tests.")
 
     # 2. Get or create a superuser for 'created_by'
@@ -27,8 +28,8 @@ def seed_data():
         admin_user = User.objects.create_superuser('admin', 'admin@example.com', 'admin123')
         print("Created superuser: admin")
 
-    # 3. Create or Get "IQ Test - Set 1"
-    test_name = "IQ Test - Set 1"
+    # 3. Create or Get "Verbal IQ Test - Set 1"
+    test_name = "Verbal IQ Test - Set 1"
     test, created = Test.objects.get_or_create(
         name=test_name,
         category='verbal' if 'Non-Verbal' not in locals().get('test_name', '') and 'WAT' not in locals().get('test_name', '') else ('non-verbal' if 'Non-Verbal' in locals().get('test_name', '') else 'wat'),

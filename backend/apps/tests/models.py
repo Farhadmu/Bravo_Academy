@@ -188,8 +188,8 @@ class TestSession(models.Model):
             self.time_spent_seconds = int(time_diff.total_seconds())
         
         # Calculate score
-        if self.test.category in ['wat', 'verbal']:
-            # WAT and Verbal tests are not graded - always mark as completed/passed
+        if self.test.category == 'wat':
+            # WAT tests are not graded - always mark as completed/passed
             score = 0
             percentage = 100.0  # Mark as 100% completed
             passed = True

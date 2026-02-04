@@ -11,13 +11,13 @@ from apps.tests.models import Test
 from apps.questions.models import Question
 
 def parse_and_create_set9():
-    print("Creating 'IQ Test - Set 9'...")
+    print("Creating 'Verbal IQ Test - Set 9'...")
     
     # Create or get the test
     # Note: 'is_paid' field does not exist, derived from price > 0.
     # 'time_limit' is 'duration_minutes'
     set9, created = Test.objects.get_or_create(
-        name="IQ Test - Set 9",
+        name="Verbal IQ Test - Set 9",
         defaults={
             "description": "Ninth set of IQ evaluation questions",
             "duration_minutes": 30,

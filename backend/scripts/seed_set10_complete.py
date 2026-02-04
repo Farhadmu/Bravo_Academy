@@ -12,11 +12,11 @@ from apps.tests.models import Test
 from apps.questions.models import Question
 
 def parse_and_create_set10():
-    print("Creating 'IQ Test - Set 10'...")
+    print("Creating 'Verbal IQ Test - Set 10'...")
     
     # Create or get the test
     set10, created = Test.objects.get_or_create(
-        name="IQ Test - Set 10",
+        name="Verbal IQ Test - Set 10",
         defaults={
             "description": "Tenth set of IQ evaluation questions",
             "duration_minutes": 30,

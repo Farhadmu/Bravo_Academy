@@ -15,7 +15,7 @@ from apps.questions.models import Question
 from apps.users.models import User
 
 def seed_data():
-    print("Starting seeding for IQ Test - Set 2 (Premium)...")
+    print("Starting seeding for Verbal IQ Test - Set 2 (Premium)...")
     
     # 1. Get or create a superuser for 'created_by'
     admin_user = User.objects.filter(is_superuser=True).first()
@@ -23,8 +23,8 @@ def seed_data():
         admin_user = User.objects.create_superuser('admin', 'admin@example.com', 'admin123')
         print("Created superuser: admin")
 
-    # 2. Create or Get "IQ Test - Set 2"
-    test_name = "IQ Test - Set 2"
+    # 2. Create or Get "Verbal IQ Test - Set 2"
+    test_name = "Verbal IQ Test - Set 2"
     # To make it "Premium" but with 0 price, we set is_free_sample=False and price=0
     test, created = Test.objects.get_or_create(
         name=test_name,

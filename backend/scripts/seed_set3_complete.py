@@ -118,7 +118,7 @@ def parse_and_create_set3():
     
     # Create or get Set 3
     set3, created = Test.objects.get_or_create(
-        name="IQ Test - Set 3",
+        name="Verbal IQ Test - Set 3",
         defaults={
             "duration_minutes": 30,
             "total_questions": 100,

@@ -72,7 +72,7 @@ export default function ResultDetailPage({ params }: { params: Promise<{ id: str
 
     // WAT and Verbal View (Non-graded)
     // Use test_category to properly distinguish between test types
-    const isNonGraded = result.question_type === 'wat' || result.test_category === 'verbal';
+    const isNonGraded = result.question_type === 'wat';
 
     if (isNonGraded) {
         const title = result.question_type === 'wat' ? 'WAT Completed' : 'Verbal Test Completed';
@@ -180,56 +180,58 @@ export default function ResultDetailPage({ params }: { params: Promise<{ id: str
                         <div className="bg-blue-600 h-full transition-all duration-500" style={{ width: `${accuracy}%` }}></div>
                     </div>
 
-                    <div className="space-y-6 mt-8">
-                        <h3 className="text-lg font-bold border-b pb-2">Question Analysis</h3>
-                        {result.review_data?.map((item, index) => (
-                            <div key={item.id} className={`p-6 rounded-lg border ${item.is_correct ? 'bg-green-50/30 border-green-100' : item.user_answer ? 'bg-red-50/30 border-red-100' : 'bg-gray-50/50 border-gray-100'}`}>
-                                <div className="flex justify-between items-start gap-4 mb-4">
-                                    <h4 className="font-medium text-gray-900 leading-relaxed">
-                                        {index + 1}. {item.question_text}
-                                    </h4>
-                                    {item.is_correct ? (
-                                        <span className="flex items-center gap-1 text-xs font-bold text-green-600 whitespace-nowrap bg-green-100 px-2 py-1 rounded">
-                                            <CheckCircle className="w-3 h-3" /> CORRECT
-                                        </span>
-                                    ) : (
-                                        <span className="flex items-center gap-1 text-xs font-bold text-red-600 whitespace-nowrap bg-red-100 px-2 py-1 rounded">
-                                            <XCircle className="w-3 h-3" /> {item.user_answer ? 'WRONG' : 'SKIPPED'}
-                                        </span>
+                    {result.review_data && result.review_data.length > 0 && (
+                        <div className="space-y-6 mt-8">
+                            <h3 className="text-lg font-bold border-b pb-2">Question Analysis</h3>
+                            {result.review_data.map((item, index) => (
+                                <div key={item.id} className={`p-6 rounded-lg border ${item.is_correct ? 'bg-green-50/30 border-green-100' : item.user_answer ? 'bg-red-50/30 border-red-100' : 'bg-gray-50/50 border-gray-100'}`}>
+                                    <div className="flex justify-between items-start gap-4 mb-4">
+                                        <h4 className="font-medium text-gray-900 leading-relaxed">
+                                            {index + 1}. {item.question_text}
+                                        </h4>
+                                        {item.is_correct ? (
+                                            <span className="flex items-center gap-1 text-xs font-bold text-green-600 whitespace-nowrap bg-green-100 px-2 py-1 rounded">
+                                                <CheckCircle className="w-3 h-3" /> CORRECT
+                                            </span>
+                                        ) : (
+                                            <span className="flex items-center gap-1 text-xs font-bold text-red-600 whitespace-nowrap bg-red-100 px-2 py-1 rounded">
+                                                <XCircle className="w-3 h-3" /> {item.user_answer ? 'WRONG' : 'SKIPPED'}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                        <div className="text-sm">
+                                            <span className="text-gray-500 block mb-1">Your Answer:</span>
+                                            <span className={`font-medium ${item.is_correct ? 'text-green-700' : 'text-red-700'}`}>
+                                                {item.user_answer !== null
+                                                    ? item.options.find(o => o.id === item.user_answer)?.text || 'Unknown'
+                                                    : <span className="text-gray-400 italic">No answer provided</span>
+                                                }
+                                            </span>
+                                        </div>
+                                        <div className="text-sm">
+                                            <span className="text-gray-500 block mb-1">Correct Answer:</span>
+                                            <span className="font-medium text-green-700">
+                                                {item.options.find(o => o.id === item.correct_answer)?.text}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {item.explanation && (
+                                        <div className="bg-white/60 p-4 rounded border border-dashed border-gray-200 text-sm">
+                                            <span className="font-bold text-gray-700 block mb-1 flex items-center gap-2">
+                                                <BarChart2 className="w-4 h-4" /> Explanation:
+                                            </span>
+                                            <p className="text-gray-600 leading-relaxed">
+                                                {item.explanation}
+                                            </p>
+                                        </div>
                                     )}
                                 </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                    <div className="text-sm">
-                                        <span className="text-gray-500 block mb-1">Your Answer:</span>
-                                        <span className={`font-medium ${item.is_correct ? 'text-green-700' : 'text-red-700'}`}>
-                                            {item.user_answer !== null
-                                                ? item.options.find(o => o.id === item.user_answer)?.text || 'Unknown'
-                                                : <span className="text-gray-400 italic">No answer provided</span>
-                                            }
-                                        </span>
-                                    </div>
-                                    <div className="text-sm">
-                                        <span className="text-gray-500 block mb-1">Correct Answer:</span>
-                                        <span className="font-medium text-green-700">
-                                            {item.options.find(o => o.id === item.correct_answer)?.text}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                {item.explanation && (
-                                    <div className="bg-white/60 p-4 rounded border border-dashed border-gray-200 text-sm">
-                                        <span className="font-bold text-gray-700 block mb-1 flex items-center gap-2">
-                                            <BarChart2 className="w-4 h-4" /> Explanation:
-                                        </span>
-                                        <p className="text-gray-600 leading-relaxed">
-                                            {item.explanation}
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </div>
