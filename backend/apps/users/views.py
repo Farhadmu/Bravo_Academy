@@ -82,12 +82,20 @@ class CookieTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
         refresh_token = request.COOKIES.get(settings.SIMPLE_JWT['AUTH_COOKIE_REFRESH'])
         
+        # Inject cookie token into request data if not present
         if refresh_token:
             data = request.data.copy()
             data['refresh'] = refresh_token
-            request._full_data = data
+            serializer = self.get_serializer(data=data)
+        else:
+            serializer = self.get_serializer(data=request.data)
             
-        response = super().post(request, *args, **kwargs)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+            
+        response = Response(serializer.validated_data, status=status.HTTP_200_OK)
         
         if response.status_code == 200:
             access_token = response.data.get('access')

@@ -6,12 +6,17 @@ from .models import Test, TestSession
 from .serializers import TestSerializer, TestSessionSerializer
 from apps.questions.serializers import TestQuestionSerializer
 from apps.questions.models import Question
+from utils.permissions import IsAdminOrReadOnly
 
 class TestViewSet(viewsets.ModelViewSet):
     queryset = Test.objects.all()
     serializer_class = TestSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
     filterset_fields = ['category', 'is_active', 'is_free_sample', 'is_bank']
+
+    def perform_create(self, serializer):
+        """Set the creator of the test to the current user."""
+        serializer.save(created_by=self.request.user)
 
     def get_queryset(self):
         """Return tests ordered by creation date ascending (Set 1, Set 2...)."""

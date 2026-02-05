@@ -200,10 +200,10 @@ SIMPLE_JWT = {
     'AUTH_COOKIE': 'access_token',  # Cookie name for access token
     'AUTH_COOKIE_REFRESH': 'refresh_token',  # Cookie name for refresh token
     'AUTH_COOKIE_DOMAIN': config('AUTH_COOKIE_DOMAIN', default=None),
-    'AUTH_COOKIE_SECURE': config('AUTH_COOKIE_SECURE', default=False, cast=bool),
+    'AUTH_COOKIE_SECURE': config('AUTH_COOKIE_SECURE', default=not DEBUG, cast=bool),
     'AUTH_COOKIE_HTTP_ONLY': True,
     'AUTH_COOKIE_PATH': '/',
-    'AUTH_COOKIE_SAMESITE': 'Lax',
+    'AUTH_COOKIE_SAMESITE': config('AUTH_COOKIE_SAMESITE', default='Lax' if DEBUG else 'None'),
 }
 
 # CORS settings
