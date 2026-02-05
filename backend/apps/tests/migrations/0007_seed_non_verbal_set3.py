@@ -22,7 +22,7 @@ def seed_non_verbal_set3(apps, schema_editor):
         category='non-verbal',
         defaults={
             'description': "Advanced non-verbal reasoning and pattern recognition. Premium set featuring 28 complex problems.",
-            'duration_minutes': 25,
+            'duration_minutes': 9,
             'total_questions': 28,
             'price': 0.00,
             'is_free_sample': False,
