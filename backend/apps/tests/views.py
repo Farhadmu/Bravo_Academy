@@ -52,7 +52,16 @@ class TestViewSet(viewsets.ModelViewSet):
             test=test, 
             status='in_progress'
         ).first()
-        
+
+        # AUTO-EXPIRATION: If a session is old, mark it expired so we start fresh
+        if active_session:
+            now = timezone.now()
+            elapsed = (now - active_session.started_at).total_seconds()
+            if elapsed > active_session.time_limit_seconds:
+                active_session.status = 'expired'
+                active_session.save(update_fields=['status'])
+                active_session = None
+
         if not active_session:
             active_session = TestSession.objects.create(
                 user=request.user,
@@ -83,6 +92,15 @@ class TestViewSet(viewsets.ModelViewSet):
             status='in_progress'
         ).first()
         
+        # AUTO-EXPIRATION: If a session is old, mark it expired so we start fresh
+        if active_session:
+            now = timezone.now()
+            elapsed = (now - active_session.started_at).total_seconds()
+            if elapsed > active_session.time_limit_seconds:
+                active_session.status = 'expired'
+                active_session.save(update_fields=['status'])
+                active_session = None
+
         if active_session:
             return Response(TestSessionSerializer(active_session).data)
 

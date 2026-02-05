@@ -196,10 +196,16 @@ export default function TestRunnerPage({ params }: { params: Promise<{ id: strin
     }, [currentQuestionIndex, loading, isSubmitted, questions.length]);
 
     useEffect(() => {
-        if (!loading && timeLeft === 0 && !isSubmitted && !submissionInProgress.current) {
+        // CRITICAL SAFETY GUARD: Only auto-submit if we have a valid test state
+        // This prevents immediate submission during the brief window where loading is false but 
+        // state hasn't fully propagated, or when the fetch failed.
+        const canSubmit = !loading && test && sessionId && questions.length > 0;
+
+        if (canSubmit && timeLeft === 0 && !isSubmitted && !submissionInProgress.current) {
+            console.log("Auto-submitting: Time expired.");
             handleSubmit(true, answersRef.current);
         }
-    }, [timeLeft, loading, isSubmitted]);
+    }, [timeLeft, loading, isSubmitted, test, sessionId, questions.length]);
 
 
     const handleOptionSelect = async (optionId: string) => {
