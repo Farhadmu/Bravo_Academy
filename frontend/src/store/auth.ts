@@ -12,7 +12,10 @@ export interface User {
 interface AuthState {
     user: User | null;
     isAuthenticated: boolean;
-    login: (user: User) => void;
+    accessToken: string | null;
+    refreshToken: string | null;
+    login: (user: User, accessToken?: string, refreshToken?: string) => void;
+    setTokens: (accessToken?: string, refreshToken?: string) => void;
     logout: () => void;
     updateUser: (user: Partial<User>) => void;
 }
@@ -22,17 +25,26 @@ export const useAuthStore = create<AuthState>()(
         (set) => ({
             user: null,
             isAuthenticated: false,
-            login: (user) => {
-                set({ user, isAuthenticated: true });
+            accessToken: null,
+            refreshToken: null,
+            login: (user, accessToken, refreshToken) => {
+                set({ user, isAuthenticated: true, accessToken: accessToken ?? null, refreshToken: refreshToken ?? null });
+            },
+            setTokens: (accessToken, refreshToken) => {
+                set((state) => ({
+                    accessToken: accessToken ?? state.accessToken,
+                    refreshToken: refreshToken ?? state.refreshToken,
+                }));
             },
             logout: async () => {
                 try {
                     const api = (await import('@/lib/api')).default;
-                    await api.post('/auth/logout/');
+                    const storedRefresh = useAuthStore.getState().refreshToken;
+                    await api.post('/auth/logout/', storedRefresh ? { refresh_token: storedRefresh } : {});
                 } catch (error) {
                     console.error('Logout API call failed:', error);
                 } finally {
-                    set({ user: null, isAuthenticated: false });
+                    set({ user: null, isAuthenticated: false, accessToken: null, refreshToken: null });
                 }
             },
             updateUser: (userData) => {
@@ -43,7 +55,12 @@ export const useAuthStore = create<AuthState>()(
         }),
         {
             name: 'auth-storage',
-            partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
+            partialize: (state) => ({
+                user: state.user,
+                isAuthenticated: state.isAuthenticated,
+                accessToken: state.accessToken,
+                refreshToken: state.refreshToken,
+            }),
         }
     )
 );

@@ -1,3 +1,5 @@
+import re
+from django.conf import settings
 from rest_framework import serializers
 from .models import Question, QuestionImage
 
@@ -6,21 +8,27 @@ class QuestionImageSerializer(serializers.ModelSerializer):
         model = QuestionImage
         fields = ['id', 'image', 'caption', 'order']
 
+    def _get_supabase_public_url(self):
+        """Dynamically derive Supabase public bucket URL from Django settings."""
+        endpoint = getattr(settings, 'AWS_S3_ENDPOINT_URL', '')
+        bucket = getattr(settings, 'AWS_STORAGE_BUCKET_NAME', 'media')
+        match = re.search(r'https?://([^.]+)\.storage\.supabase\.co', endpoint)
+        if match:
+            project_id = match.group(1)
+            return f"https://{project_id}.supabase.co/storage/v1/object/public/{bucket}"
+        return None
+
     def to_representation(self, instance):
-        """
-        Emergency Fix: Ensure Supabase URLs are used even if storage backend fails.
-        """
         ret = super().to_representation(instance)
         if instance.image:
             url = ret['image']
-            # If URL is pointing to Render's local media but should be Supabase
-            if '/media/questions/' in url and 'supabase.co' not in url:
-                # Construct the correct public URL
-                # Hardcoded foundation based on confirmed Supabase config
-                supabase_domain = "https://jjxusciiuvcjltkreozq.supabase.co/storage/v1/object/public/media"
-                # Extract relative path from /media/
-                relative_path = url.split('/media/')[-1]
-                ret['image'] = f"{supabase_domain}/{relative_path}"
+            # If S3 storage is configured and returned a proper URL, use it as-is
+            if url and ('://' in url):
+                return ret
+            # Fallback: construct Supabase public URL from stored path
+            supabase_url = self._get_supabase_public_url()
+            if supabase_url:
+                ret['image'] = f"{supabase_url}/{instance.image.name}"
         return ret
 
 class TestQuestionSerializer(serializers.ModelSerializer):

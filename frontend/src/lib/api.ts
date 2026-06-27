@@ -45,13 +45,22 @@ const getCookie = (name: string): string | null => {
 // Track active timers to prevent toast storms
 const activeTimers = new Map<string, any>();
 
-// Request interceptor to add CSRF token and handle cold-starts
+// Request interceptor to add CSRF token, Authorization header, and handle cold-starts
 api.interceptors.request.use(
-    (config: InternalAxiosRequestConfig) => {
+    async (config: InternalAxiosRequestConfig) => {
         // Handle CSRF token
         const csrfToken = getCookie('csrftoken');
         if (csrfToken && config.headers) {
             config.headers['X-CSRFToken'] = csrfToken;
+        }
+
+        // Attach JWT token from store for cross-site auth (iOS Safari fix)
+        if (typeof window !== 'undefined') {
+            const { useAuthStore } = await import('@/store/auth');
+            const token = useAuthStore.getState().accessToken;
+            if (token && config.headers) {
+                config.headers['Authorization'] = `Bearer ${token}`;
+            }
         }
 
         // GLOBAL COLD-BOOT DETECTION:
@@ -123,13 +132,13 @@ api.interceptors.response.use(
         const isAuthEndpoint = originalRequest.url?.includes('/auth/login/') || originalRequest.url?.includes('/auth/register/');
 
         if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
-            // Check if this is a maintenance mode logout
+                // Check if this is a maintenance mode logout
             const responseData = error.response?.data as { logout?: boolean } | undefined;
             if (responseData?.logout === true) {
                 // User was logged out due to maintenance mode
                 if (typeof window !== 'undefined') {
                     const { useAuthStore } = await import('@/store/auth');
-                    useAuthStore.setState({ user: null, isAuthenticated: false });
+                    useAuthStore.setState({ user: null, isAuthenticated: false, accessToken: null, refreshToken: null });
 
                     // Redirect to login with maintenance message
                     window.location.href = '/login';
@@ -140,17 +149,37 @@ api.interceptors.response.use(
             originalRequest._retry = true;
 
             try {
-                // Try to refresh token using the HttpOnly cookie
-                await axios.post(`${getBaseURL()}/auth/refresh/`, {}, {
-                    withCredentials: true
-                });
+                // Try to refresh token using stored refresh token (or HttpOnly cookie as fallback)
+                const { useAuthStore } = await import('@/store/auth');
+                const storedRefresh = useAuthStore.getState().refreshToken;
 
-                // Retry original request (browser will now have the new cookie)
+                let refreshResponse;
+                if (storedRefresh) {
+                    refreshResponse = await axios.post(`${getBaseURL()}/auth/refresh/`, { refresh: storedRefresh }, {
+                        withCredentials: true
+                    });
+                } else {
+                    refreshResponse = await axios.post(`${getBaseURL()}/auth/refresh/`, {}, {
+                        withCredentials: true
+                    });
+                }
+
+                // Update stored tokens
+                const newAccess = refreshResponse.data?.access;
+                const newRefresh = refreshResponse.data?.refresh;
+                if (newAccess) {
+                    useAuthStore.getState().setTokens(newAccess, newRefresh);
+                }
+
+                // Retry original request with new token
+                if (newAccess && originalRequest.headers) {
+                    originalRequest.headers['Authorization'] = `Bearer ${newAccess}`;
+                }
                 return api(originalRequest);
             } catch (refreshError) {
                 if (typeof window !== 'undefined') {
                     const { useAuthStore } = await import('@/store/auth');
-                    useAuthStore.setState({ user: null, isAuthenticated: false });
+                    useAuthStore.setState({ user: null, isAuthenticated: false, accessToken: null, refreshToken: null });
 
                     // Only redirect if we're not already on the login page to avoid refresh loop
                     if (window.location.pathname !== '/login') {
