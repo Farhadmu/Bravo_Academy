@@ -5,7 +5,8 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.password_validation import validate_password
 from django.utils import timezone
-from .models import User
+from user_agents import parse as parse_ua
+from .models import User, LoginLog
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -26,6 +27,42 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         # Update last_login on successful login (SimpleJWT does not do this automatically)
         self.user.last_login = timezone.now()
         self.user.save(update_fields=['last_login'])
+        
+        # Record login log with device info
+        try:
+            request = self.context.get('request')
+            if request:
+                ua_string = request.META.get('HTTP_USER_AGENT', '')
+                ip = request.META.get('REMOTE_ADDR', None)
+                forwarded = request.META.get('HTTP_X_FORWARDED_FOR', None)
+                if forwarded:
+                    ip = forwarded.split(',')[0].strip()
+                
+                device = 'desktop'
+                browser = ''
+                os_name = ''
+                if ua_string:
+                    ua = parse_ua(ua_string)
+                    if ua.is_mobile:
+                        device = 'mobile'
+                    elif ua.is_tablet:
+                        device = 'tablet'
+                    browser = f"{ua.browser.family} {ua.browser.version_string}"
+                    os_name = f"{ua.os.family} {ua.os.version_string}"
+                
+                LoginLog.objects.create(
+                    user=self.user,
+                    ip_address=ip,
+                    user_agent=ua_string[:500],
+                    device_type=device,
+                    browser=browser[:100],
+                    os=os_name[:100],
+                    login_time=timezone.now(),
+                    success=True,
+                )
+        except Exception:
+            pass  # Don't break login for logging failure
+        
         data['user'] = UserSerializer(self.user).data
         return data
 
@@ -98,3 +135,15 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
         user = User.objects.create_user(**validated_data)
         return user
+
+
+class LoginLogSerializer(serializers.ModelSerializer):
+    """Serializer for login logs."""
+    username = serializers.CharField(source='user.username', read_only=True)
+    full_name = serializers.CharField(source='user.get_full_name', read_only=True)
+    role = serializers.CharField(source='user.role', read_only=True)
+
+    class Meta:
+        model = LoginLog
+        fields = ('id', 'username', 'full_name', 'role', 'ip_address', 
+                  'device_type', 'browser', 'os', 'login_time', 'success')

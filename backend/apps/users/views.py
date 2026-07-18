@@ -17,8 +17,10 @@ from .serializers import (
     UserSerializer, 
     CustomTokenObtainPairSerializer,
     ChangePasswordSerializer,
-    UserCreateSerializer
+    UserCreateSerializer,
+    LoginLogSerializer,
 )
+from .models import LoginLog
 from apps.tests.models import Test
 
 User = get_user_model()
@@ -278,4 +280,42 @@ class AdminDashboardViewSet(viewsets.ViewSet):
             },
             'registration_data': registration_data,
             'recent_payments': []
+        })
+
+
+class LoginLogViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet for viewing login logs (admin only)."""
+    serializer_class = LoginLogSerializer
+    permission_classes = [IsAdminUser]
+
+    def get_queryset(self):
+        return LoginLog.objects.select_related('user').all()
+
+    def list(self, request, *args, **kwargs):
+        page = request.query_params.get('page', 1)
+        page_size = request.query_params.get('page_size', 50)
+        
+        queryset = self.get_queryset()
+        
+        # Optional filters
+        username = request.query_params.get('username', None)
+        if username:
+            queryset = queryset.filter(user__username__icontains=username)
+        
+        device = request.query_params.get('device', None)
+        if device:
+            queryset = queryset.filter(device_type=device)
+        
+        # Manual pagination
+        from django.core.paginator import Paginator
+        paginator = Paginator(queryset, page_size)
+        page_obj = paginator.get_page(page)
+        
+        serializer = self.get_serializer(page_obj.object_list, many=True)
+        
+        return Response({
+            'count': paginator.count,
+            'next': page_obj.next_page_number() if page_obj.has_next() else None,
+            'previous': page_obj.previous_page_number() if page_obj.has_previous() else None,
+            'results': serializer.data,
         })

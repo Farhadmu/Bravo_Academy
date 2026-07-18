@@ -106,5 +106,33 @@ class User(AbstractBaseUser, PermissionsMixin):
         default=False, 
         help_text="Designates whether the user can access to Developer Portal."
     )
+
+
+class LoginLog(models.Model):
+    """
+    Tracks user login attempts with device and location info for admin monitoring.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='login_logs',
+        db_index=True
+    )
+    ip_address = models.GenericIPAddressField(blank=True, null=True)
+    user_agent = models.TextField(blank=True, default='')
+    device_type = models.CharField(max_length=50, blank=True, default='')
+    browser = models.CharField(max_length=100, blank=True, default='')
+    os = models.CharField(max_length=100, blank=True, default='')
+    login_time = models.DateTimeField(default=timezone.now, db_index=True)
+    success = models.BooleanField(default=True)
+
+    class Meta:
+        app_label = 'users'
+        db_table = 'login_logs'
+        verbose_name = 'Login Log'
+        verbose_name_plural = 'Login Logs'
+        ordering = ['-login_time']
+
+    def __str__(self):
+        return f"{self.user.username} @ {self.login_time.strftime('%Y-%m-%d %H:%M')}"
     
 

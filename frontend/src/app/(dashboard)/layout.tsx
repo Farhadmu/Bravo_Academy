@@ -11,7 +11,8 @@ import {
     LogOut,
     Menu,
     X,
-    Settings
+    Settings,
+    Lock
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -70,6 +71,7 @@ export default function DashboardLayout({
         { href: '/admin/dashboard', label: 'Overview', icon: LayoutDashboard },
         { href: '/admin/users', label: 'User Management', icon: User },
         { href: '/admin/tests', label: 'Test Management', icon: Brain },
+        { href: '/admin/login-logs', label: 'Login Logs', icon: Lock },
         { href: '/admin/settings', label: 'Settings', icon: Settings },
     ];
 

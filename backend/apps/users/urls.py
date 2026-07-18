@@ -8,12 +8,14 @@ from .views import (
     CookieTokenRefreshView, 
     LogoutView, 
     UserViewSet, 
-    AdminDashboardViewSet
+    AdminDashboardViewSet,
+    LoginLogViewSet,
 )
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet, basename='user')
 router.register(r'dashboard-stats', AdminDashboardViewSet, basename='dashboard-stats')
+router.register(r'login-logs', LoginLogViewSet, basename='login-logs')
 
 urlpatterns = [
     # JWT Authentication
