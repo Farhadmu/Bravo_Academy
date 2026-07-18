@@ -4,6 +4,7 @@ Serializers for user authentication and management.
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.password_validation import validate_password
+from django.utils import timezone
 from .models import User
 
 
@@ -22,6 +23,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     
     def validate(self, attrs):
         data = super().validate(attrs)
+        # Update last_login on successful login (SimpleJWT does not do this automatically)
+        self.user.last_login = timezone.now()
+        self.user.save(update_fields=['last_login'])
         data['user'] = UserSerializer(self.user).data
         return data
 
