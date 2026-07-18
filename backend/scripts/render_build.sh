@@ -1,24 +1,25 @@
 #!/usr/bin/env bash
-# Render.com build script for Django (Memory Efficient, Fixed LF line endings)
 set -o errexit
 set -o pipefail
-# Note: nounset intentionally omitted because Render build env may have unset variables
 
-echo "Build started..."
+echo "[1/6] Starting build..."
+python --version
+pip --version
+
+echo "[2/6] Creating venv..."
 python -m venv venv
 source venv/bin/activate
 
-echo "Installing dependencies (no-cache to save RAM)..."
-pip install --upgrade pip
-pip install -r requirements.txt --no-cache-dir
+echo "[3/6] Installing deps..."
+pip install --no-cache-dir -r requirements.txt
 
-echo "Verifying critical imports..."
-python -c "from user_agents import parse; print('user-agents OK')" 2>&1 || echo "WARNING: user-agents check failed"
+echo "[4/6] Verify user_agents..."
+python -c "from user_agents import parse; print('OK:', parse('test'))"
 
-echo "Collecting static assets..."
+echo "[5/6] Collectstatic..."
 python manage.py collectstatic --no-input
 
-echo "Running migrations..."
+echo "[6/6] Migrate..."
 python manage.py migrate --no-input
 
-echo "Build successful!"
+echo "BUILD SUCCESS"
