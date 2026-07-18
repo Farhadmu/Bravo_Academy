@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuthStore } from '@/store/auth'
 import api from '@/lib/api'
-import { Shield, AlertCircle, Info } from "lucide-react"
+import { Shield } from "lucide-react"
 import { toast } from 'sonner'
 
 const loginSchema = z.object({
@@ -28,14 +28,9 @@ export default function LoginPage() {
     const [isLoading, setIsLoading] = useState(false)
     const [mounted, setMounted] = useState(false)
     const [slowLoadId, setSlowLoadId] = useState<string | number | null>(null)
-    const [maintenance, setMaintenance] = useState<{ is_active: boolean; message: string } | null>(null)
 
     useEffect(() => {
         setMounted(true)
-        // Check maintenance status
-        api.get('/system/maintenance/current/')
-            .then(res => setMaintenance(res.data))
-            .catch(() => { })
     }, [])
 
     useEffect(() => {
@@ -103,8 +98,8 @@ export default function LoginPage() {
                 message = err.response.data.error || 'Invalid Credentials'
                 description = err.response.data.detail || 'The username or password you entered is incorrect.'
             } else if (!err.response) {
-                message = 'Network Error'
-                description = 'Could not reach the server. Your internet might be weak or our server is down.'
+                message = 'Server is Starting Up'
+                description = 'Our backend server is waking up from sleep (free-tier cold start). This takes 30-60 seconds. Please wait a moment and try again.'
             }
 
             toast.error(message, {
@@ -122,17 +117,6 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4 py-12 sm:px-6 lg:px-8">
-            {maintenance?.is_active && (
-                <div className="w-full max-w-md mb-4 animate-in slide-in-from-top duration-500">
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex gap-3 shadow-md">
-                        <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0" />
-                        <div>
-                            <p className="text-sm font-bold text-yellow-800 uppercase tracking-wider mb-1">System Maintenance</p>
-                            <p className="text-xs text-yellow-700">{maintenance.message}</p>
-                        </div>
-                    </div>
-                </div>
-            )}
             <Card className="w-full max-w-md shadow-xl">
                 <CardHeader className="text-center">
                     <div className="mx-auto bg-blue-100 p-3 rounded-full w-fit mb-4">

@@ -28,6 +28,7 @@ const getBaseURL = () => {
 const api: AxiosInstance = axios.create({
     baseURL: getBaseURL(),
     withCredentials: true, // Crucial for sending/receiving HttpOnly cookies
+    timeout: 120000, // 2 min timeout to handle Render cold starts (free tier spins down)
     headers: {
         'Content-Type': 'application/json',
     },
@@ -64,9 +65,7 @@ api.interceptors.request.use(
         }
 
         // GLOBAL COLD-BOOT DETECTION:
-
-        // GLOBAL COLD-BOOT DETECTION:
-        // Set a timer to show a "waking up" toast if the request takes > 3s
+        // Show a "waking up" toast if the request takes > 3s
         if (typeof window !== 'undefined' && config.method !== 'options') {
             const requestId = Math.random().toString(36).substring(7);
             (config as any).requestId = requestId;
@@ -93,7 +92,7 @@ api.interceptors.request.use(
                 toast.info(title, {
                     id: `cold-boot-${requestId}`,
                     description: desc,
-                    duration: 15000,
+                    duration: 60000,
                 });
             }, 3000);
 

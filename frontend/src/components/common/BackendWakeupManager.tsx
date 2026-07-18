@@ -15,9 +15,34 @@ export const useWakeupStore = create<WakeupState>((set) => ({
     setWakingUp: (waking) => set({ isWakingUp: waking }),
 }));
 
+function wakeUpBackend() {
+    const { setWakingUp } = useWakeupStore.getState();
+    setWakingUp(true);
+    const base = process.env.NEXT_PUBLIC_API_URL || 'https://online-education-platform-fypx.onrender.com/api';
+    const url = base.replace(/\/+$/, '');
+    fetch(`${url}/health/`, { method: 'GET', mode: 'cors' })
+        .then(() => setWakingUp(false))
+        .catch(() => {
+            // Retry once after a short delay in case of cold-start failure
+            setTimeout(() => {
+                fetch(`${url}/health/`, { method: 'GET', mode: 'cors' })
+                    .then(() => setWakingUp(false))
+                    .catch(() => setWakingUp(false));
+            }, 5000);
+        });
+}
+
 export function BackendWakeupManager() {
     const isWakingUp = useWakeupStore((state) => state.isWakingUp);
     const toastIdRef = useRef<string | number | null>(null);
+    const wokenRef = useRef(false);
+
+    useEffect(() => {
+        if (!wokenRef.current) {
+            wokenRef.current = true;
+            wakeUpBackend();
+        }
+    }, []);
 
     useEffect(() => {
         if (isWakingUp && !toastIdRef.current) {
