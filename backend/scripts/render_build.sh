@@ -16,10 +16,13 @@ echo "[3/6] Installing dependencies..."
 pip install --upgrade pip
 pip install --no-cache-dir -r requirements.txt
 
-echo "[4/6] Collecting static assets..."
+echo "[4/6] Verifying critical imports..."
+python -c "from user_agents import parse; print('user_agents OK')"
+
+echo "[5/7] Collecting static assets..."
 python manage.py collectstatic --no-input
 
-echo "[5/6] Running database migrations..."
+echo "[6/7] Running database migrations..."
 python manage.py migrate --no-input
 
-echo "[6/6] Build completed successfully!"
+echo "[7/7] Build completed successfully!"

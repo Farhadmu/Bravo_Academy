@@ -5,7 +5,13 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.password_validation import validate_password
 from django.utils import timezone
-from user_agents import parse as parse_ua
+try:
+    from user_agents import parse as parse_ua
+    _user_agents_available = True
+except ImportError:
+    parse_ua = None
+    _user_agents_available = False
+
 from .models import User, LoginLog
 
 
@@ -41,14 +47,17 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                 device = 'desktop'
                 browser = ''
                 os_name = ''
-                if ua_string:
-                    ua = parse_ua(ua_string)
-                    if ua.is_mobile:
-                        device = 'mobile'
-                    elif ua.is_tablet:
-                        device = 'tablet'
-                    browser = f"{ua.browser.family} {ua.browser.version_string}"
-                    os_name = f"{ua.os.family} {ua.os.version_string}"
+                if ua_string and _user_agents_available and parse_ua is not None:
+                    try:
+                        ua = parse_ua(ua_string)
+                        if ua.is_mobile:
+                            device = 'mobile'
+                        elif ua.is_tablet:
+                            device = 'tablet'
+                        browser = f"{ua.browser.family} {ua.browser.version_string}"
+                        os_name = f"{ua.os.family} {ua.os.version_string}"
+                    except Exception:
+                        pass
                 
                 LoginLog.objects.create(
                     user=self.user,
