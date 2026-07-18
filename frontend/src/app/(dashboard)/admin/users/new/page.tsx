@@ -5,11 +5,17 @@ import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label"; // Assuming Label component exists or I'll generic label
-// Actually I don't think I have Label component in ui/label.tsx based on file list (Step 495: button, card, input). 
-// I'll use standard label.
-import { Loader2, ArrowLeft, Save } from "lucide-react";
+import { CheckCircle, Loader2, ArrowLeft, Save, Copy, X } from "lucide-react";
 import api from '@/lib/api';
+
+function generatePassword(): string {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    let pwd = '';
+    for (let i = 0; i < 8; i++) {
+        pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return pwd;
+}
 
 export default function NewUserPage() {
     const router = useRouter();
@@ -23,10 +29,11 @@ export default function NewUserPage() {
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [successResult, setSuccessResult] = useState<{ username: string; password: string } | null>(null);
+    const [copied, setCopied] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value, type } = e.target;
-        // Handle checkbox separately if I had one, but is_active defaults to true.
+        const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
@@ -36,13 +43,18 @@ export default function NewUserPage() {
         setError(null);
 
         try {
-            // Filter out empty username/password so backend auto-generation kicks in
             const payload: any = { ...formData };
             if (!payload.username) delete payload.username;
+            const passwordIsSet = !!payload.password;
             if (!payload.password) delete payload.password;
 
-            await api.post('/auth/users/', payload);
-            router.push('/admin/users');
+            const response = await api.post('/auth/users/', payload);
+            const createdUser = response.data;
+
+            setSuccessResult({
+                username: createdUser.username || payload.full_name?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'user',
+                password: passwordIsSet ? payload.password : (createdUser.username || payload.full_name?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'user')
+            });
         } catch (err: any) {
             console.error("Create failed", err);
             setError(err.response?.data ? JSON.stringify(err.response.data) : "Failed to create user");
@@ -50,6 +62,55 @@ export default function NewUserPage() {
             setLoading(false);
         }
     };
+
+    const copyCredentials = () => {
+        if (!successResult) return;
+        const text = `Username: ${successResult.username}\nPassword: ${successResult.password}`;
+        navigator.clipboard.writeText(text).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        });
+    };
+
+    if (successResult) {
+        return (
+            <div className="max-w-lg mx-auto space-y-6">
+                <Card className="border-green-200">
+                    <CardHeader className="text-center">
+                        <div className="mx-auto bg-green-100 p-3 rounded-full w-fit mb-4">
+                            <CheckCircle className="w-8 h-8 text-green-600" />
+                        </div>
+                        <CardTitle className="text-2xl font-bold text-green-700">User Created!</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-3">
+                            <div>
+                                <span className="text-sm font-medium text-green-800">Username</span>
+                                <div className="text-xl font-mono font-bold text-green-900 bg-white border border-green-300 rounded px-3 py-2 mt-1">{successResult.username}</div>
+                            </div>
+                            <div>
+                                <span className="text-sm font-medium text-green-800">Password</span>
+                                <div className="text-xl font-mono font-bold text-green-900 bg-white border border-green-300 rounded px-3 py-2 mt-1">{successResult.password}</div>
+                            </div>
+                        </div>
+                        <p className="text-sm text-green-700 text-center">
+                            Share these credentials with the student.
+                        </p>
+                        <div className="flex gap-2">
+                            <Button onClick={copyCredentials} variant="outline" className="flex-1">
+                                {copied ? <><CheckCircle className="mr-2 h-4 w-4" /> Copied</> : <><Copy className="mr-2 h-4 w-4" /> Copy Credentials</>}
+                            </Button>
+                            <Button onClick={() => router.push('/admin/users')} className="flex-1">
+                                Go to User List
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
+
+    const suggestedPassword = formData.password || generatePassword();
 
     return (
         <div className="max-w-2xl mx-auto space-y-6">
@@ -110,6 +171,48 @@ export default function NewUserPage() {
                                 <option value="admin">Admin</option>
                                 <option value="staff">Staff</option>
                             </select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" htmlFor="password">
+                                Password <span className="text-gray-400 font-normal">(optional)</span>
+                            </label>
+                            <div className="flex gap-2">
+                                <Input
+                                    id="password"
+                                    name="password"
+                                    type="text"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder={suggestedPassword}
+                                    className="font-mono"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => setFormData(prev => ({ ...prev, password: generatePassword() }))}
+                                    title="Generate random password"
+                                >
+                                    <Loader2 className="h-4 w-4 rotate-45" />
+                                </Button>
+                                {formData.password && (
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => setFormData(prev => ({ ...prev, password: '' }))}
+                                        title="Auto-generate from username"
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                )}
+                            </div>
+                            <p className="text-xs text-muted-foreground text-gray-500">
+                                {formData.password
+                                    ? 'Custom password will be used.'
+                                    : 'Leave empty to auto-generate from username (password = username).'}
+                            </p>
                         </div>
 
                     </CardContent>

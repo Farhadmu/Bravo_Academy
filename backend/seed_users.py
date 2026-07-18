@@ -19,6 +19,7 @@ def seed():
         print("Database connection established.")
 
         # Admin User
+        admin_username = os.getenv('SEED_ADMIN_USERNAME', 'admin')
         admin_password = os.getenv('SEED_ADMIN_PASSWORD')
         if not admin_password:
              raise ValueError("SEED_ADMIN_PASSWORD environment variable is NOT set.")

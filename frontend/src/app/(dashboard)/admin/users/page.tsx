@@ -141,6 +141,11 @@ export default function AdminUsersPage() {
                 </Button>
             </div>
 
+            <div className="bg-blue-50 border border-blue-200 text-blue-800 p-3 rounded-md text-sm">
+                When creating a user without setting a password, the password defaults to the <strong>username</strong>.
+                Use the <KeyRound className="inline h-3.5 w-3.5" /> key icon to reset any student's password.
+            </div>
+
             <Card>
                 <CardHeader>
                     <CardTitle>All Users</CardTitle>
