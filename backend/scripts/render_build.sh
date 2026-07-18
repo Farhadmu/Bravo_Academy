@@ -6,11 +6,13 @@ echo "[1/6] Starting build..."
 python --version
 pip --version
 
-echo "[2/6] Creating venv..."
+echo "[2/6] Cleaning and creating fresh venv..."
+rm -rf venv
 python -m venv venv
-source venv/bin/activate
+. venv/bin/activate
 
-echo "[3/6] Installing deps..."
+echo "[3/6] Upgrading pip and installing deps..."
+pip install --upgrade pip
 pip install --no-cache-dir -r requirements.txt
 
 echo "[4/6] Verify user_agents..."
